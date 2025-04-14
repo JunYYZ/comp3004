@@ -9,18 +9,72 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    calculator.cpp \
+    bolusCalculator.cpp \
+    bolusCalculator.cpp \
     main.cpp \
-    mainwindow.cpp \
-    calculator.cpp
+    mainwindow.cpp
 
 HEADERS += \
-    calculator.h \
+    bolusCalculator.h \
+    bolusCalculator.h \
     mainwindow.h \
     HistoryLog.h \
     Profile.h \
-    Pump.h \
-    calculator.h
+    Pump.h
+
+FORMS += \
+    mainwindow.ui
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+
+HEADERS += \
+    bolusCalculator.h \
+    mainwindow.h \
+    HistoryLog.h \
+    Profile.h \
+    Pump.h
+
+FORMS += \
+    mainwindow.ui
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+
+SOURCES += \
+    bolusCalculator.cpp \
+    main.cpp \
+    mainwindow.cpp
+
+HEADERS += \
+    bolusCalculator.h \
+    bolusCalculator.h \
+    mainwindow.h \
+    HistoryLog.h \
+    Profile.h \
+    Pump.h
+
+FORMS += \
+    mainwindow.ui
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+
+HEADERS += \
+    bolusCalculator.h \
+    mainwindow.h \
+    HistoryLog.h \
+    Profile.h \
+    Pump.h
 
 FORMS += \
     mainwindow.ui
