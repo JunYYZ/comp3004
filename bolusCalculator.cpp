@@ -16,7 +16,7 @@ double ExtendedBolus::getImmediateDose() const
     return m_immediateDose;
 }
 
-double ExtendedBolus::getExtendedDose() const
+double ExtendedBolus::getExtendedDose() const //git
 {
     return m_extendedDose;
 }
