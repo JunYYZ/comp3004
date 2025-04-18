@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainWindow</class>
+ <widget class="QMainWindow" name="mainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>791</width>
+    <height>415</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>mainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>791</width>
+     <height>0</height>
+    </size>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QStackedWidget" name="stackedPages">
+      <widget class="LockPage" name="pageLock"/>
+      <widget class="HomePage" name="pageHome"/>
+      <widget class="StatusPage" name="pageStatus"/>
+      <widget class="BolusPage" name="pageBolus"/>
+      <widget class="OptionsPage" name="pageOptions"/>
+      <widget class="ProfileListPage" name="pageProfileList"/>
+      <widget class="ProfileEditorPage" name="pageProfileEdit"/>
+      <widget class="HistoryLogPage" name="pageHistory"/>
+      <widget class="SettingsPage" name="pageSettings"/>
+      <widget class="GraphPage" name="pageGraph"/>
+      <widget class="PumpInfoPage" name="pagePumpInfo"/>
+      <widget class="ControlIQPage" name="pageControlIQ"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>791</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <widget class="QMenu" name="menuLock">
+    <property name="title">
+     <string>Lock</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuHome">
+    <property name="title">
+     <string>Home</string>
+    </property>
+   </widget>
+   <addaction name="menuHome"/>
+   <addaction name="menuLock"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LockPage</class>
+   <extends>QWidget</extends>
+   <header>LockPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HomePage</class>
+   <extends>QWidget</extends>
+   <header>HomePage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StatusPage</class>
+   <extends>QWidget</extends>
+   <header>StatusPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BolusPage</class>
+   <extends>QWidget</extends>
+   <header>BolusPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OptionsPage</class>
+   <extends>QWidget</extends>
+   <header>OptionsPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ProfileListPage</class>
+   <extends>QWidget</extends>
+   <header>ProfileListPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ProfileEditorPage</class>
+   <extends>QWidget</extends>
+   <header>ProfileEditorPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HistoryLogPage</class>
+   <extends>QWidget</extends>
+   <header>HistoryLogPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SettingsPage</class>
+   <extends>QWidget</extends>
+   <header>SettingsPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GraphPage</class>
+   <extends>QWidget</extends>
+   <header>GraphPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PumpInfoPage</class>
+   <extends>QWidget</extends>
+   <header>PumpInfoPage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ControlIQPage</class>
+   <extends>QWidget</extends>
+   <header>ControlIQPage.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
