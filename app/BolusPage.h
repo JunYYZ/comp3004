@@ -2,32 +2,28 @@
 #define BOLUSPAGE_H
 
 #include <QWidget>
+class ProfileManager;
 
 namespace Ui {
 class BolusPage;
 }
-
-// forward‐declare your QMainWindow subclass
-class mainWindow;
-class Pump;
 
 class BolusPage : public QWidget
 {
     Q_OBJECT
 
 public:
-    /// matches new BolusPage(this)
-    explicit BolusPage(mainWindow* mw);
+    // This must match BolusPage::BolusPage(ProfileManager*, QWidget*)
+    explicit BolusPage(ProfileManager* profileManager,
+                       QWidget* parent = nullptr);
     ~BolusPage() override;
 
 private slots:
-    void on_btnDeliver_clicked();
-    void updateSuggestion(int carbs);
+    void updateSuggestion();
 
 private:
-    Ui::BolusPage* ui;
-    mainWindow*    m_mainWindow;
-    Pump*          m_pump;
+    Ui::BolusPage*    ui;
+    ProfileManager*   m_profileManager;  //<— add this
 };
 
 #endif // BOLUSPAGE_H
