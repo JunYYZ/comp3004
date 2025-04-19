@@ -1,39 +1,21 @@
 #include "BolusPage.h"
 #include "ui_BolusPage.h"
-
-#include "BolusCalculator.h"
 #include "ProfileManager.h"
-#include "mainWindow.h"
 
-#include <QDoubleSpinBox>
-#include <QSpinBox>
-#include <QString>
-
-BolusPage::BolusPage(QWidget *parent)
-    : BolusPage(qobject_cast<mainWindow*>(parent)->profileManager(),parent){}
-
-
-BolusPage::BolusPage(ProfileManager* profileManager,
-                     QWidget* parent)
-  : QWidget(parent)
-  , ui(new Ui::BolusPage)
-  , m_profileManager(profileManager)
+BolusPage::BolusPage(QWidget* parent)
+  : QWidget(parent),
+    ui(new Ui::BolusPage),
+    m_profileManager(nullptr)
 {
     ui->setupUi(this);
 
-    // Hook up the QDoubleSpinBox for carbs:
-    auto doubleSlot =
-        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
-    connect(ui->sbCarbs, doubleSlot,
-            this,        &BolusPage::updateSuggestion);
+    // wire up your spin‐boxes (assuming you named them carbsSpin and bgSpin in Designer)
+    connect(ui->sbCarbs, SIGNAL(valueChanged(int)),
+            this,          SLOT(on_carbsSpin_valueChanged(int)));
+    connect(ui->sbCurrentBG,    SIGNAL(valueChanged(int)),
+            this,          SLOT(on_bgSpin_valueChanged(int)));
 
-    // Hook up the QSpinBox for current BG:
-    auto intSlot =
-        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
-    connect(ui->sbCurrentBG, intSlot,
-            this,             &BolusPage::updateSuggestion);
-
-    // Initial suggestion on page load
+    // initial display
     updateSuggestion();
 }
 
@@ -42,29 +24,44 @@ BolusPage::~BolusPage()
     delete ui;
 }
 
+void BolusPage::setProfileManager(ProfileManager* mgr)
+{
+    m_profileManager = mgr;
+    // once we have a real manager, we can re‐compute
+    updateSuggestion();
+}
+
+void BolusPage::on_carbsSpin_valueChanged(int /*grams*/)
+{
+    updateSuggestion();
+}
+
+void BolusPage::on_bgSpin_valueChanged(int /*bg*/)
+{
+    updateSuggestion();
+}
+
 void BolusPage::updateSuggestion()
 {
-    // 1) Read inputs
-    double carbs = ui->sbCarbs->value();      // grams of carbs
-    int    bg    = ui->sbCurrentBG->value();  // current blood glucose
-    double iob   = 0.0;                       // TODO: fetch real IOB from history
+    if (!m_profileManager) {
+        ui->lblSuggested->setText(tr("No profile manager hooked up"));
+        return;
+    }
 
-    // 2) Configure calculator
-    BolusCalculator calc;
     auto profile = m_profileManager->activeProfile();
-    calc.setCarbRatio(        profile.carbRatio() );
-    calc.setCorrectionFactor( profile.correctionFactor() );
-    calc.setInsulinOnBoard(   iob );
+    double carbRatio       = profile.carbRatio();
+    double correctionFact  = profile.correctionFactor();
+    int    targetBG        = profile.targetBG();
+    int    currentBG       = ui->sbCurrentBG->value();
+    int    grams           = ui->sbCarbs->value();
 
-    // 3) Compute bolus components
-    double food   = calc.foodBolus(carbs);
-    double corr   = calc.correctionBolus(bg);
-    double raw    = food + corr;
-    double finalU = calc.subtractIOB(raw);
+    // simple example: carb bolus + correction
+    double carbBolus  = grams / carbRatio;
+    double corrBolus  = (currentBG - targetBG) / correctionFact;
+    double totalUnits = carbBolus + corrBolus;
+    if (totalUnits < 0) totalUnits = 0;
 
-    // 4) Display result
     ui->lblSuggested->setText(
-        tr("Suggest: %1 U")
-            .arg(QString::number(finalU, 'f', 1))
+        QString::asprintf("Suggest %.1f U", totalUnits)
     );
 }

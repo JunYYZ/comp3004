@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "Pump.h"
 #include "ProfileManager.h"
+#include "HistoryLogPage.h"
 
 class HomePage;
 class LockPage;
@@ -54,6 +55,7 @@ private:
 
     // one member per page
     Pump            *m_pump;
+    HistoryLogPage* m_historypage;
     ProfileManager  *m_profileManager;
     HomePage        *pageHome;
     LockPage        *pageLock;

@@ -25,13 +25,15 @@ mainWindow::mainWindow(QWidget *parent)
     , pageStatus(new StatusPage(this))
     , pageBolus(new BolusPage(this))
     , pageGraph(new GraphPage(this))
-    , pageHistoryLog(new HistoryLogPage(this))
+    , pageHistoryLog(new HistoryLogPage(m_pump, this))
     , pageProfileList(new ProfileListPage(this))
     , pagePumpInfo(new PumpInfoPage(this))
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
 {
     ui->setupUi(this);
+
+    ui->pageBolus->setProfileManager( m_profileManager );
 
     // Add each page widget into the QstackedPages in the same order:
     ui->stackedPages->addWidget(pageLock);
@@ -79,6 +81,10 @@ void mainWindow::connectPageSignals()
 
     // --- LockPage unlock (via NumberKeypad inside LockPage) ---
     connect(pageLock, &LockPage::authenticated,  this, &mainWindow::onActionHome);
+
+    // --- HistoryLogPage go back ----
+    connect(pageHistoryLog, &HistoryLogPage::backRequested,
+            this, &mainWindow::onActionHome);
 }
 
 void mainWindow::onActionHome()

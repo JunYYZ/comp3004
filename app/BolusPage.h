@@ -1,5 +1,4 @@
-#ifndef BOLUSPAGE_H
-#define BOLUSPAGE_H
+#pragma once
 
 #include <QWidget>
 class ProfileManager;
@@ -13,20 +12,19 @@ class BolusPage : public QWidget
     Q_OBJECT
 
 public:
-    // Default ctor
-    explicit BolusPage(QWidget *parent = nullptr);
-
-    // This must match BolusPage::BolusPage(ProfileManager*, QWidget*)
-    explicit BolusPage(ProfileManager* profileManager,
-                       QWidget* parent = nullptr);
+    explicit BolusPage(QWidget* parent = nullptr);
     ~BolusPage() override;
 
+    /// Must be called by MainWindow to give BolusPage its ProfileManager.
+    void setProfileManager(ProfileManager* mgr);
+
 private slots:
-    void updateSuggestion();
+    void on_carbsSpin_valueChanged(int grams);
+    void on_bgSpin_valueChanged(int bg);
 
 private:
-    Ui::BolusPage*    ui;
-    ProfileManager*   m_profileManager;  //<— add this
-};
+    void updateSuggestion();
 
-#endif // BOLUSPAGE_H
+    Ui::BolusPage*    ui;
+    ProfileManager*   m_profileManager;
+};
