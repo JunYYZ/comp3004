@@ -13,6 +13,9 @@ class BolusPage : public QWidget
     Q_OBJECT
 
 public:
+    // Default ctor
+    explicit BolusPage(QWidget *parent = nullptr);
+
     // This must match BolusPage::BolusPage(ProfileManager*, QWidget*)
     explicit BolusPage(ProfileManager* profileManager,
                        QWidget* parent = nullptr);

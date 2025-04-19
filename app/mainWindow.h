@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "Pump.h"
+#include "ProfileManager.h"
 
 class HomePage;
 class LockPage;
@@ -25,6 +27,8 @@ class mainWindow : public QMainWindow
 public:
     explicit mainWindow(QWidget *parent = nullptr);
     ~mainWindow();
+    Pump* pump() const { return m_pump; }
+    ProfileManager* profileManager() const { return m_profileManager;}
 
 private slots:
     // navigation
@@ -49,6 +53,8 @@ private:
     Ui::mainWindow   *ui;
 
     // one member per page
+    Pump            *m_pump;
+    ProfileManager  *m_profileManager;
     HomePage        *pageHome;
     LockPage        *pageLock;
     StatusPage      *pageStatus;

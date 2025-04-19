@@ -8,11 +8,11 @@
 #include <QPushButton>
 #include <QDateTime>
 
-HistoryLogPage::HistoryLogPage(mainWindow* mw)
-  : QWidget(mw)
+HistoryLogPage::HistoryLogPage(QWidget *parent)
+  : QWidget(parent)
   , ui(new Ui::HistoryLogPage)
-  , m_mainWindow(mw)
-  , m_pump(mw->pump())
+  , m_mainWindow(qobject_cast<mainWindow*>(parent))
+  , m_pump(m_mainWindow ? m_mainWindow->pump() : nullptr)
 {
     ui->setupUi(this);
 

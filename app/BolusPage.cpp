@@ -3,10 +3,15 @@
 
 #include "BolusCalculator.h"
 #include "ProfileManager.h"
+#include "mainWindow.h"
 
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QString>
+
+BolusPage::BolusPage(QWidget *parent)
+    : BolusPage(qobject_cast<mainWindow*>(parent)->profileManager(),parent){}
+
 
 BolusPage::BolusPage(ProfileManager* profileManager,
                      QWidget* parent)

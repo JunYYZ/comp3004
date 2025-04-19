@@ -27,7 +27,6 @@
       <widget class="HomePage" name="pageHome"/>
       <widget class="StatusPage" name="pageStatus"/>
       <widget class="BolusPage" name="pageBolus"/>
-      <widget class="OptionsPage" name="pageOptions"/>
       <widget class="ProfileListPage" name="pageProfileList"/>
       <widget class="ProfileEditorPage" name="pageProfileEdit"/>
       <widget class="HistoryLogPage" name="pageHistory"/>
@@ -97,12 +96,6 @@
    <class>BolusPage</class>
    <extends>QWidget</extends>
    <header>BolusPage.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>OptionsPage</class>
-   <extends>QWidget</extends>
-   <header>OptionsPage.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

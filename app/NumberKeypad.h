@@ -31,7 +31,7 @@ private slots:
     void on_btn7_clicked();
     void on_btn8_clicked();
     void on_btn9_clicked();
-    void on_btnDel_clicked();
+    void on_btnDEL_clicked();
     void on_btnOK_clicked();
 
 private:

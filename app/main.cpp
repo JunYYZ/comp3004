@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     clock->start();
 
     // --- Launch main window ---
-    MainWindow w;
+    mainWindow w;
     w.show();
 
     return app.exec();

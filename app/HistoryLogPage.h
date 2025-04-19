@@ -15,7 +15,7 @@ class HistoryLogPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit HistoryLogPage(mainWindow* mw);
+    explicit HistoryLogPage(QWidget *parent = nullptr);
     ~HistoryLogPage() override;
 
 private slots:

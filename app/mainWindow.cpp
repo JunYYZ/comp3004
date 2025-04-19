@@ -18,6 +18,8 @@
 mainWindow::mainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::mainWindow)
+    , m_pump(new Pump(this))
+    , m_profileManager(new ProfileManager(this))
     , pageHome(new HomePage(this))
     , pageLock(new LockPage(this))
     , pageStatus(new StatusPage(this))

@@ -34,6 +34,19 @@ double BolusCalculator::totalBolus(double carbs, int currentBG) const {
     return subtractIOB(raw);
 }
 
+double BolusCalculator::insulinOnBoard() const {
+    return m_insulinOnBoard;
+}
+double BolusCalculator::carbRatio() const {
+    return m_carbRatio;
+}
+double BolusCalculator::correctionFactor() const {
+    return m_correctionFactor;
+}
+int BolusCalculator::targetBG() const {
+    return m_targetBG;
+}
+
 BolusCalculator::ExtendedBolus
 BolusCalculator::splitExtendedBolus(double totalBolus,
                                     double fractionImmediate,

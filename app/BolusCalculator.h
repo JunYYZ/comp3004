@@ -24,6 +24,12 @@ public:
     void setInsulinOnBoard(double iob);
     void setTargetBG(int tbg);
 
+    // getters
+    double insulinOnBoard() const;
+    double carbRatio() const;
+    double correctionFactor() const;
+    int targetBG() const;
+
     // core computations
     double foodBolus(double carbs) const;
     double correctionBolus(int currentBG) const;

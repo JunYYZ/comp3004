@@ -31,7 +31,7 @@ DIGIT_SLOT(9)
 #undef DIGIT_SLOT
 
 // Backspace
-void NumberKeypad::on_btnDel_clicked()
+void NumberKeypad::on_btnDEL_clicked()
 {
     emit deletePressed();
 }
