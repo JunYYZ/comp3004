@@ -28,7 +28,7 @@
       <widget class="StatusPage" name="pageStatus"/>
       <widget class="BolusPage" name="pageBolus"/>
       <widget class="ProfileListPage" name="pageProfileList"/>
-      <widget class="ProfileEditorPage" name="pageProfileEdit"/>
+      <widget class="ProfileEditorPage" name="pageProfileEditor"/>
       <widget class="HistoryLogPage" name="pageHistory"/>
       <widget class="SettingsPage" name="pageSettings"/>
       <widget class="GraphPage" name="pageGraph"/>

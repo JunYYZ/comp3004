@@ -27,6 +27,7 @@ mainWindow::mainWindow(QWidget *parent)
     , pageGraph(new GraphPage(this))
     , pageHistoryLog(new HistoryLogPage(m_pump, this))
     , pageProfileList(new ProfileListPage(this))
+    , pageProfileEditor(new ProfileEditorPage(m_profileManager, this))
     , pagePumpInfo(new PumpInfoPage(this))
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
@@ -34,6 +35,7 @@ mainWindow::mainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->pageBolus->setProfileManager( m_profileManager );
+    pageProfileList->setProfileManager(m_profileManager);
 
     // Add each page widget into the QstackedPages in the same order:
     ui->stackedPages->addWidget(pageLock);
@@ -43,6 +45,7 @@ mainWindow::mainWindow(QWidget *parent)
     ui->stackedPages->addWidget(pageGraph);
     ui->stackedPages->addWidget(pageHistoryLog);
     ui->stackedPages->addWidget(pageProfileList);
+    ui->stackedPages->addWidget(pageProfileEditor);
     ui->stackedPages->addWidget(pagePumpInfo);
     ui->stackedPages->addWidget(pageSettings);
     ui->stackedPages->addWidget(pageControlIQ);
@@ -85,6 +88,20 @@ void mainWindow::connectPageSignals()
     // --- HistoryLogPage go back ----
     connect(pageHistoryLog, &HistoryLogPage::backRequested,
             this, &mainWindow::onActionHome);
+
+    connect(pageProfileList, &ProfileListPage::requestAddProfile,
+            this,             &mainWindow::onAddProfile);
+    connect(pageProfileList, &ProfileListPage::requestEditProfile,
+            this,             &mainWindow::onEditProfile);
+    connect(pageProfileList, &ProfileListPage::requestDeleteProfile,
+            this,             &mainWindow::onDeleteProfile);
+    connect(pageProfileEditor, &ProfileEditorPage::addProfile,
+                this,                &mainWindow::onEditorAddProfile);
+    connect(pageProfileEditor, &ProfileEditorPage::updateProfile,
+                this,                &mainWindow::onEditorUpdateProfile);
+    connect(pageProfileEditor, &ProfileEditorPage::cancel,
+                this,                &mainWindow::onActionProfileList);
+
 }
 
 void mainWindow::onActionHome()
@@ -155,3 +172,49 @@ void mainWindow::updateStatusBar()
         QString("Time: %1    Battery: %2%").arg(t).arg(battery)
     );
 }
+
+void mainWindow::onAddProfile()
+{
+    // clear out whatever your editor page is showing...
+    pageProfileEditor->clearFields();
+    ui->stackedPages->setCurrentWidget(pageProfileEditor);
+}
+
+void mainWindow::onEditProfile(const QString &name)
+{
+    // lookup via our new helper
+    Profile p = m_profileManager->getProfileByName(name);
+    // pre‑load fields and switch to Edit mode
+    pageProfileEditor->setProfile(p);
+    ui->stackedPages->setCurrentWidget(pageProfileEditor);
+}
+
+void mainWindow::onDeleteProfile(const QString &name)
+{
+    m_profileManager->removeProfile(name);
+    // the profileChanged() signal will fire and refresh the list automatically
+}
+
+void mainWindow::onEditorAddProfile(const Profile& p)
+{
+    // add it to the manager
+    m_profileManager->addProfile(p);
+    // then go back to the list page so they can see it
+    ui->stackedPages->setCurrentWidget(pageProfileList);
+}
+
+void mainWindow::onEditorUpdateProfile(const QString& originalName,
+                                       const Profile& p)
+{
+    // update in the manager
+    m_profileManager->updateProfile(originalName, p);
+    // back to list
+    ui->stackedPages->setCurrentWidget(pageProfileList);
+}
+
+void mainWindow::onEditorCancel()
+{
+    // just go back to the list
+    ui->stackedPages->setCurrentWidget(pageProfileList);
+}
+

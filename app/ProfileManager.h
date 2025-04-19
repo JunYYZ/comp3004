@@ -31,6 +31,8 @@ public:
     //michael nischal nimish will use this to pull latest profile info
     Profile activeProfile() const;
 
+    Profile getProfileByName(const QString &name) const;
+
 signals:
     void profileChanged(); //for gui refresh dropdown or profile summary view
 

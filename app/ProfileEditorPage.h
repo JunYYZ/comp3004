@@ -35,6 +35,9 @@ public:
     /// If you used the default ctor, inject your ProfileManager before saving
     void setProfileManager(ProfileManager* mgr);
 
+    /// clear out all UI fields and switch to “New” mode
+    void clearFields();
+
 signals:
     /// Emitted when the user clicks Save in New mode
     void addProfile(const Profile& p);

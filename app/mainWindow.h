@@ -5,6 +5,7 @@
 #include "Pump.h"
 #include "ProfileManager.h"
 #include "HistoryLogPage.h"
+#include "ProfileEditorPage.h"
 
 class HomePage;
 class LockPage;
@@ -45,6 +46,14 @@ private slots:
     void onActionSettings();
     void onActionControlIQ();
 
+    //profile-list actions
+    void onAddProfile();
+    void onEditProfile(const QString &name);
+    void onDeleteProfile(const QString &name);
+    void onEditorAddProfile(const Profile& p);
+    void onEditorUpdateProfile(const QString& originalName, const Profile& p);
+    void onEditorCancel();
+
     // status bar updates
     void updateStatusBar();
 
@@ -64,6 +73,7 @@ private:
     GraphPage       *pageGraph;
     HistoryLogPage  *pageHistoryLog;
     ProfileListPage *pageProfileList;
+    ProfileEditorPage *pageProfileEditor;
     PumpInfoPage    *pagePumpInfo;
     SettingsPage    *pageSettings;
     ControlIQPage   *pageControlIQ;

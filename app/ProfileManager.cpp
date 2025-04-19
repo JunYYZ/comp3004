@@ -58,6 +58,16 @@ QVector<Profile> ProfileManager::profiles() const
     return m_profiles;
 }
 
+Profile ProfileManager::getProfileByName(const QString &name) const
+{
+    for (const Profile &p : m_profiles) {
+        if (p.name() == name)
+            return p;
+    }
+    // not found: return a dummy
+    return Profile("", 0.0, 0.0, 0);
+}
+
 //called when user picks from gui dropdown to set active profile
 bool ProfileManager::selectProfile(const QString &name)
 {

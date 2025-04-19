@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+class ProfileManager;
+
 namespace Ui {
 class ProfileListPage;
 }
@@ -13,26 +15,25 @@ class ProfileListPage : public QWidget
 
 public:
     explicit ProfileListPage(QWidget *parent = nullptr);
-    ~ProfileListPage() override;
+    ~ProfileListPage();
 
-    /// Call this to display the current list of profile names
-    void setProfiles(const QStringList &names);
+    // Inject the ProfileManager once you're ready
+    void setProfileManager(ProfileManager* mgr);
 
 signals:
-    /// User wants to create a new profile
-    void addProfile();
-    /// User wants to delete the currently selected profile
-    void deleteProfile(const QString &profileName);
-    /// User wants to edit the currently selected profile
-    void editProfile(const QString &profileName);
+    void requestAddProfile();
+    void requestEditProfile(const QString &name);
+    void requestDeleteProfile(const QString &name);
 
 private slots:
     void onBtnAddClicked();
-    void onBtnDeleteClicked();
     void onBtnEditClicked();
+    void onBtnDeleteClicked();
+    void refreshProfiles();               // reload names from the manager
 
 private:
     Ui::ProfileListPage *ui;
+    ProfileManager      *m_profileManager = nullptr;
 };
 
 #endif // PROFILELISTPAGE_H

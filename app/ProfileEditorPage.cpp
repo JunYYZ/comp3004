@@ -17,6 +17,22 @@ ProfileEditorPage::ProfileEditorPage(ProfileManager* manager, QWidget *parent)
     updateUiForMode();
 }
 
+void ProfileEditorPage::clearFields()
+{
+    // reset our working Profile
+    m_current = Profile("", 1.0, 1.0, 0);
+    m_originalName.clear();
+
+    // clear UI widgets
+    ui->leName->clear();
+    ui->sbCarbRatio->setValue(1.0);
+    ui->sbCorrection->setValue(1.0);
+    ui->sbTargetBG->setValue(0);
+
+    // back to “Add” mode
+    setMode(Mode::New);
+}
+
 ProfileEditorPage::ProfileEditorPage(QWidget *parent)
   : QWidget(parent)
   , ui(new Ui::ProfileEditorPage)
