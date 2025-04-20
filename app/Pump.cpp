@@ -214,3 +214,13 @@ void Pump::checkLevels()
     else
         m_errorHandler->clear(ErrorHandler::LowInsulin);
 }
+
+void Pump::chargeBattery()
+{
+    int oldLevel = m_battery;
+    m_battery = std::min(m_battery + 25, 100);
+    if (m_battery != oldLevel) {
+        logEvent(QString("Battery charged to %1 %").arg(m_battery));
+        emit batteryLevelChanged(m_battery);
+    }
+}
