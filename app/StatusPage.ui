@@ -45,6 +45,11 @@
      <string>Battery Level (%):</string>
     </property>
    </widget>
+   <widget class="QLabel" name="lblCGM">
+    <property name="text">
+     <string>CGM Status:</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QSplitter" name="splitter_2">
    <property name="geometry">
@@ -78,32 +83,24 @@
      <number>24</number>
     </property>
    </widget>
+   <widget class="QLabel" name="lblCGMVal">
+    <property name="text">
+     <string>Connected</string>
+    </property>
+   </widget>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QPushButton" name="btnBack">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>270</y>
-     <width>341</width>
-     <height>27</height>
+     <x>510</x>
+     <y>260</y>
+     <width>111</width>
+     <height>31</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPushButton" name="btnStart">
-      <property name="text">
-       <string>Start Basal</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="btnStop">
-      <property name="text">
-       <string>Stop Basal</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="text">
+    <string>Back</string>
+   </property>
   </widget>
  </widget>
  <resources/>

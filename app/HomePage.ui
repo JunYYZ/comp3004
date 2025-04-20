@@ -92,7 +92,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Bolus</string>
+       <string>Manual Bolus</string>
       </property>
      </widget>
     </item>
@@ -131,7 +131,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Graph</string>
+       <string>CGM</string>
       </property>
      </widget>
     </item>

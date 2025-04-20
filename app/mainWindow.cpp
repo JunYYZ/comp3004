@@ -125,6 +125,15 @@ void mainWindow::connectPageSignals()
 
     connect(pageControlIQ, &ControlIQPage::backClicked,
              this,              &mainWindow::onActionHome);
+
+    // --- Status Page ---
+    connect(pageStatus, &StatusPage::backRequested,
+                this,               &mainWindow::onActionHome);
+
+
+    // --- Settings Page ---
+    connect(pageSettings, &SettingsPage::backRequested,
+                this,               &mainWindow::onActionHome);
 }
 
 void mainWindow::onActionHome()
