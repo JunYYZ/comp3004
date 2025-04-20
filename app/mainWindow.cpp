@@ -143,6 +143,12 @@ void mainWindow::connectPageSignals()
     // --- StatusPage back ---
     connect(pageStatus, &StatusPage::backRequested,
             this,               &mainWindow::onActionHome);
+
+    connect(pageBolus, &BolusPage::backClicked,
+            this,               &mainWindow::onActionHome);
+
+    connect(pagePumpInfo, &PumpInfoPage::backClicked,
+            this,               &mainWindow::onActionHome);
 }
 
 // ----------------------------------------------------------------

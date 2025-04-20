@@ -15,6 +15,8 @@ BolusPage::BolusPage(QWidget* parent)
     connect(ui->sbCurrentBG,    SIGNAL(valueChanged(int)),
             this,          SLOT(on_bgSpin_valueChanged(int)));
     connect(ui->btnDeliver, &QPushButton::clicked, this, &BolusPage::on_btnDeliver_clicked);
+    connect(ui->btnCancel, &QPushButton::clicked,
+            this, &BolusPage::onBtnCancelClicked);
     // initial display
     updateSuggestion();
 }
@@ -90,4 +92,8 @@ void BolusPage::updateSuggestion()
     ui->lblSuggested->setText(
         QString::asprintf("Suggest %.1f U", totalUnits)
     );
+}
+
+void BolusPage::onBtnCancelClicked() {
+    emit backClicked();
 }
