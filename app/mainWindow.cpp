@@ -12,6 +12,7 @@
 #include "SettingsPage.h"
 #include "ControlIQPage.h"
 
+#include <QDebug>
 #include <QTimer>
 #include <QDateTime>
 
@@ -33,6 +34,8 @@ mainWindow::mainWindow(QWidget *parent)
     , pageControlIQ(new ControlIQPage(this))
 {
     ui->setupUi(this);
+    // initially we’re locked, so you can’t jump to Home
+    ui->menuHome->setEnabled(false);
 
     ui->pageBolus->setProfileManager( m_profileManager );
     pageProfileList->setProfileManager(m_profileManager);
@@ -43,6 +46,11 @@ mainWindow::mainWindow(QWidget *parent)
             this,
             &mainWindow::updateStatusBar,
             Qt::QueuedConnection);
+    // menuHome and menuLock are QMenu*, so get their QAction and connect:
+    connect(ui->menuHome, &QMenu::aboutToShow, this, &mainWindow::onActionHome);
+    connect(ui->menuLock, &QMenu::aboutToShow, this, &mainWindow::onActionLock);
+
+
     // Add each page widget into the QstackedPages in the same order:
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
@@ -121,7 +129,19 @@ void mainWindow::connectPageSignals()
 
 void mainWindow::onActionHome()
 {
+      qDebug() << "Home clicked!";
     ui->stackedPages->setCurrentWidget(pageHome);
+    // we’re now unlocked, so Home is allowed
+    ui->menuHome->setEnabled(true);
+}
+
+void mainWindow::onActionLock()
+{
+      qDebug() << "Lock menu clicked!";
+      pageLock->reset();
+    ui->stackedPages->setCurrentWidget(pageLock);
+    // back to locked state – no Home
+    ui->menuHome->setEnabled(false);
 }
 
 void mainWindow::onActionStatus()

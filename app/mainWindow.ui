@@ -62,8 +62,14 @@
      <string>Home</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuCharge_Battery">
+    <property name="title">
+     <string>Charge Battery</string>
+    </property>
+   </widget>
    <addaction name="menuHome"/>
    <addaction name="menuLock"/>
+   <addaction name="menuCharge_Battery"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
