@@ -22,3 +22,4 @@ private:
 };
 
 #endif // HISTORYLOG_H
+
