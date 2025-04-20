@@ -43,7 +43,8 @@ mainWindow::mainWindow(QWidget *parent)
     // menuHome is disabled until unlocked
     ui->menuHome->setEnabled(false);
 
-    ui->pageBolus->setProfileManager( m_profileManager );
+    pageBolus->setProfileManager(m_profileManager);
+    pageBolus->setPump(m_pump);
     pageProfileList->setProfileManager(m_profileManager);
 
 

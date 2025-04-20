@@ -217,10 +217,13 @@ void Pump::checkLevels()
 
 void Pump::chargeBattery()
 {
-    int oldLevel = m_battery;
+    int old = m_battery;
     m_battery = std::min(m_battery + 25, 100);
-    if (m_battery != oldLevel) {
-        logEvent(QString("Battery charged to %1 %").arg(m_battery));
-        emit batteryLevelChanged(m_battery);
+    if (m_battery != old) {
+      logEvent(QString("Battery charged to %1 %").arg(m_battery));
+      emit batteryLevelChanged(m_battery);
+      // **reset the drain baseline:**
+      m_totalSimulatedMinutes = 0;
     }
 }
+
