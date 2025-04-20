@@ -25,6 +25,7 @@ signals:
     void requestEditProfile(const QString &name);
     void requestDeleteProfile(const QString &name);
     void backRequested();
+    void requestActivateProfile(const QString&);
 
 private slots:
     void onBtnAddClicked();
@@ -32,6 +33,7 @@ private slots:
     void onBtnDeleteClicked();
     void refreshProfiles();               // reload names from the manager
     void onBtnBackClicked();
+    void onBtnActivateClicked();
 
 private:
     Ui::ProfileListPage *ui;

@@ -13,6 +13,7 @@ ProfileListPage::ProfileListPage(QWidget *parent)
 
     // wire up buttons to our own slots
     connect(ui->btnAdd,    &QPushButton::clicked, this, &ProfileListPage::onBtnAddClicked);
+    connect(ui->btnActive, &QPushButton::clicked, this, &ProfileListPage::onBtnActivateClicked);
     connect(ui->btnEdit,   &QPushButton::clicked, this, &ProfileListPage::onBtnEditClicked);
     connect(ui->btnDelete, &QPushButton::clicked, this, &ProfileListPage::onBtnDeleteClicked);
     connect(ui->btnBack, &QPushButton::clicked, this, &ProfileListPage::onBtnBackClicked);
@@ -21,6 +22,13 @@ ProfileListPage::ProfileListPage(QWidget *parent)
 ProfileListPage::~ProfileListPage()
 {
     delete ui;
+}
+
+void ProfileListPage::onBtnActivateClicked()
+{
+    auto *item = ui->listProfiles->currentItem();
+    if (!item) return;
+    emit requestActivateProfile(item->text());
 }
 
 void ProfileListPage::setProfileManager(ProfileManager* mgr)

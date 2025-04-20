@@ -37,6 +37,12 @@ mainWindow::mainWindow(QWidget *parent)
     ui->pageBolus->setProfileManager( m_profileManager );
     pageProfileList->setProfileManager(m_profileManager);
 
+    /// Adds active profile to the status bar
+    connect(m_profileManager,
+            &ProfileManager::profileChanged,
+            this,
+            &mainWindow::updateStatusBar,
+            Qt::QueuedConnection);
     // Add each page widget into the QstackedPages in the same order:
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
@@ -98,6 +104,9 @@ void mainWindow::connectPageSignals()
             this,             &mainWindow::onDeleteProfile);
     connect(pageProfileList, &ProfileListPage::backRequested,
                 this,               &mainWindow::onActionHome);
+    connect(pageProfileList, &ProfileListPage::requestActivateProfile,
+                this,             &mainWindow::onActivateProfile);
+
     // --- ProfileEditor Page ---
     connect(pageProfileEditor, &ProfileEditorPage::addProfile,
                 this,                &mainWindow::onEditorAddProfile);
@@ -174,8 +183,15 @@ void mainWindow::updateStatusBar()
     QString t = QDateTime::currentDateTime().toString("hh:mm:ss");
     // dummy battery -- replace with your Pump::batteryLevel()
     int battery = 85;
+    // get active profile name (or “None”)
+    QString prof = m_profileManager->activeProfile().name();
+    if (prof.isEmpty()) prof = QStringLiteral("<none>");
+
     ui->statusbar->showMessage(
-        QString("Time: %1    Battery: %2%").arg(t).arg(battery)
+    QString("Time: %1    Battery: %2%    Profile: %3")
+    .arg(t)
+    .arg(battery)
+    .arg(prof)
     );
 }
 
@@ -184,6 +200,15 @@ void mainWindow::onAddProfile()
     // clear out whatever your editor page is showing...
     pageProfileEditor->clearFields();
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
+}
+
+void mainWindow::onActivateProfile(const QString &name)
+{
+    if (m_profileManager->selectProfile(name)) {
+        // success, profileChanged() will fire
+    } else {
+        // optionally show an error
+    }
 }
 
 void mainWindow::onEditProfile(const QString &name)

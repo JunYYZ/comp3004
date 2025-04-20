@@ -45,6 +45,7 @@ private slots:
     void onActionPumpInfo();
     void onActionSettings();
     void onActionControlIQ();
+    void onActivateProfile(const QString &name);
 
     //profile-list actions
     void onAddProfile();

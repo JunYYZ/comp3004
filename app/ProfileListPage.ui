@@ -26,9 +26,9 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>150</x>
      <y>240</y>
-     <width>340</width>
+     <width>429</width>
      <height>80</height>
     </rect>
    </property>
@@ -37,6 +37,13 @@
      <widget class="QPushButton" name="btnAdd">
       <property name="text">
        <string>Add</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnActive">
+      <property name="text">
+       <string>Set Active</string>
       </property>
      </widget>
     </item>
