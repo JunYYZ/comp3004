@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef INSULINDELIVERYMANAGERMODULE_H
+#define INSULINDELIVERYMANAGERMODULE_H
 
 #include <QMainWindow>
 #include "insulindeliverymanager.h"
@@ -34,5 +34,5 @@ private:
     InsulinDeliveryManager *deliveryManager;
 };
 
-#endif // MAINWINDOW_H
+#endif // INSULINDELIVERYMANAGERMODULE_H
 

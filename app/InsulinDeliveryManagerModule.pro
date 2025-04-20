@@ -10,15 +10,15 @@ CONFIG += c++11
 
 SOURCES += \
     insulindeliverymanager.cpp \
-    main.cpp \
-    mainwindow.cpp
+    insulindeliverymanagermodule.cpp \
+    main.cpp
 
 HEADERS += \
     insulindeliverymanager.h \
-    mainwindow.h
+    insulindeliverymanagermodule.h
 
 FORMS += \
-    mainwindow.ui
+    insulindeliverymanagermodule.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
