@@ -38,10 +38,12 @@ HEADERS += \
     ControlIQPage.h \
     GraphPage.h \
     GraphWidget.h \
+    HistoryLog.h \
     HistoryLogPage.h \
     HomePage.h \
     LockPage.h \
     NumberKeypad.h \
+    Profile.h \
     ProfileEditorPage.h \
     ProfileListPage.h \
     PumpInfoPage.h \
