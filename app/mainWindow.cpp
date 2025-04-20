@@ -89,12 +89,16 @@ void mainWindow::connectPageSignals()
     connect(pageHistoryLog, &HistoryLogPage::backRequested,
             this, &mainWindow::onActionHome);
 
+    // ---  ProfileListPage ---
     connect(pageProfileList, &ProfileListPage::requestAddProfile,
             this,             &mainWindow::onAddProfile);
     connect(pageProfileList, &ProfileListPage::requestEditProfile,
             this,             &mainWindow::onEditProfile);
     connect(pageProfileList, &ProfileListPage::requestDeleteProfile,
             this,             &mainWindow::onDeleteProfile);
+    connect(pageProfileList, &ProfileListPage::backRequested,
+                this,               &mainWindow::onActionHome);
+    // --- ProfileEditor Page ---
     connect(pageProfileEditor, &ProfileEditorPage::addProfile,
                 this,                &mainWindow::onEditorAddProfile);
     connect(pageProfileEditor, &ProfileEditorPage::updateProfile,
@@ -102,6 +106,8 @@ void mainWindow::connectPageSignals()
     connect(pageProfileEditor, &ProfileEditorPage::cancel,
                 this,                &mainWindow::onActionProfileList);
 
+    connect(pageControlIQ, &ControlIQPage::backClicked,
+             this,              &mainWindow::onActionHome);
 }
 
 void mainWindow::onActionHome()

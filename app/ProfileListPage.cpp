@@ -15,6 +15,7 @@ ProfileListPage::ProfileListPage(QWidget *parent)
     connect(ui->btnAdd,    &QPushButton::clicked, this, &ProfileListPage::onBtnAddClicked);
     connect(ui->btnEdit,   &QPushButton::clicked, this, &ProfileListPage::onBtnEditClicked);
     connect(ui->btnDelete, &QPushButton::clicked, this, &ProfileListPage::onBtnDeleteClicked);
+    connect(ui->btnBack, &QPushButton::clicked, this, &ProfileListPage::onBtnBackClicked);
 }
 
 ProfileListPage::~ProfileListPage()
@@ -68,4 +69,9 @@ void ProfileListPage::onBtnDeleteClicked()
     auto *item = ui->listProfiles->currentItem();
     if (!item) return;
     emit requestDeleteProfile(item->text());
+}
+
+void ProfileListPage::onBtnBackClicked()
+{
+    emit backRequested();  // ← emit it
 }
