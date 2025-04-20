@@ -42,6 +42,7 @@ HEADERS += \
     HomePage.h \
     LockPage.h \
     NumberKeypad.h \
+    Profile.h \
     ProfileEditorPage.h \
     ProfileListPage.h \
     PumpInfoPage.h \
