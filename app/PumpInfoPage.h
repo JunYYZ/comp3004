@@ -18,9 +18,6 @@ public:
     void setSerial(const QString &serial);
     void setSoftwareVersion(const QString &ver);
     void setFirmwareVersion(const QString &ver);
-    void setInsulinRemaining(int units);   // updates barInsulinVal
-    void setBatteryLevel(int percent);     // updates barBatteryVal
-    void setCGMStatus(const QString &st);
 
 signals:
     void backClicked();

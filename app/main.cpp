@@ -13,15 +13,18 @@ int main(int argc, char *argv[])
     // Use QApplication so we can show widgets
     QApplication app(argc, argv);
 
+    // The pump which delivers basal/bolus
+    Pump* pump = new Pump(&app);
+
     // --- Instantiate core components ---
     // 1 real second = 5 simulated minutes
     SimulationClock* clock = new SimulationClock(1000, 5, /* parent: */ &app);
-
+    clock->start();
     // CGM emits a reading every 5 simulated minutes
     CGM* cgm = new CGM(5, /* parent: */ &app);
 
-    // The pump which delivers basal/bolus
-    Pump* pump = new Pump(&app);
+    pump->setSimulationClock(clock);
+
 
     // Control‑IQ closed‑loop controller
     ControlIQ* ctrlIQ = new ControlIQ(pump, &app);
@@ -55,7 +58,6 @@ int main(int argc, char *argv[])
 
     // --- Start basal insulin and the sim clock ---
     pump->startInsulin();
-    clock->start();
 
     // --- Launch main window ---
     mainWindow w;

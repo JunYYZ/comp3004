@@ -7,10 +7,14 @@
 class HistoryLog
 {
 public:
+    // existing single‐arg ctor
     explicit HistoryLog(const QString &desc);
 
+    // new two‐arg ctor
+    HistoryLog(const QDateTime &ts, const QString &desc);
+
     QDateTime timestamp() const;
-    QString description() const;
+    QString   description() const;
 
 private:
     QDateTime m_timestamp;

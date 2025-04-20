@@ -6,6 +6,7 @@
 #include "ProfileManager.h"
 #include "HistoryLogPage.h"
 #include "ProfileEditorPage.h"
+#include "SimulationClock.h"
 
 class HomePage;
 class LockPage;
@@ -57,7 +58,8 @@ private slots:
     void onEditorCancel();
 
     // status bar updates
-    void updateStatusBar();
+    void updateStatusBar(int simMinutes);
+    void refreshStatusBar();
 
 private:
     void connectPageSignals();
@@ -65,6 +67,7 @@ private:
     Ui::mainWindow   *ui;
 
     // one member per page
+    SimulationClock*  m_clock;
     Pump            *m_pump;
     HistoryLogPage* m_historypage;
     ProfileManager  *m_profileManager;
