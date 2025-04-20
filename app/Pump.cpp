@@ -172,9 +172,25 @@ void Pump::emergencyStop(const QString &reason)
 
 void Pump::onSimulatedTimeAdvanced(int minutes)
 {
-    // Advance the internal simulated clock
+    // 1) Advance your own clock if you have one
     m_simTime = m_simTime.addSecs(minutes * 60);
     logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
+
+    // 2) Update your total simulated‐time counter
+    m_totalSimulatedMinutes += minutes;
+
+    // 3) Compute how many 25‐minute “chunks” have elapsed,
+    //    and drain 5% per chunk:
+    int chunks = m_totalSimulatedMinutes / 25;
+    int newBattery = 100 - chunks * 5;
+    newBattery = std::max(newBattery, 0); // clamp at zero
+
+    // 4) If it really changed, store it, log it, and emit:
+    if (newBattery != m_battery) {
+        m_battery = newBattery;
+        logEvent(QString("Battery level: %1%").arg(m_battery));
+        emit batteryLevelChanged(m_battery);
+    }
 }
 
 void Pump::logEvent(const QString &desc)

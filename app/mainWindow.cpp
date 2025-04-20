@@ -71,6 +71,9 @@ mainWindow::mainWindow(QWidget *parent)
     connectPageSignals();
     connect(m_clock, &SimulationClock::tick,
             this,    &mainWindow::refreshStatusBar);
+    connect(m_clock, &SimulationClock::tick,
+            m_pump,   &Pump::onSimulatedTimeAdvanced);
+
     m_clock->start();
 
     // show initial “00:00” battery/profile
@@ -80,6 +83,7 @@ mainWindow::mainWindow(QWidget *parent)
     connect(m_profileManager, &ProfileManager::profileChanged,
         this,                &mainWindow::refreshStatusBar,
         Qt::QueuedConnection);
+
 }
 
 mainWindow::~mainWindow()

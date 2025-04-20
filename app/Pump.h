@@ -80,6 +80,7 @@ signals:
      * @param msg  The log message.
      */
     void pumpLog(const QString& msg);
+    void batteryLevelChanged(int newBattery);
 
 private:
     /**
@@ -91,6 +92,7 @@ private:
 
     int m_battery;                    ///< Battery level [%]
     int m_insulin;                    ///< Insulin remaining [units]
+    int m_totalSimulatedMinutes = 0;  ///< accumulate
     PumpState m_state;                ///< Current state
 
     QVector<Profile> m_profiles;      ///< User profiles
