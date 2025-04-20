@@ -1,30 +1,8 @@
-// HistoryLog.cpp
-
 #include "HistoryLog.h"
-#include <QDateTime>
-
-/**
- * @brief Constructs a new HistoryLog entry with the current timestamp.
- * @param desc  A human‑readable description of the event.
- */
-HistoryLog::HistoryLog(const QString &desc)
-    : m_timestamp(QDateTime::currentDateTime()),
-      m_description(desc)
+HistoryLog::HistoryLog(QObject *p) : QObject(p) {}
+void HistoryLog::add(const QString &txt)
 {
-}
-
-/**
- * @brief Returns the timestamp when this log entry was created.
- */
-QDateTime HistoryLog::timestamp() const
-{
-    return m_timestamp;
-}
-
-/**
- * @brief Returns the description text for this log entry.
- */
-QString HistoryLog::description() const
-{
-    return m_description;
+    HistoryEntry e{QDateTime::currentDateTime(), txt};
+    m_items.append(e);
+    emit newEntry(e);
 }
