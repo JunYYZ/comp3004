@@ -60,6 +60,7 @@ private slots:
     // status bar updates
     void updateStatusBar(int simMinutes);
     void refreshStatusBar();
+    void onChargeBattery();
 
 private:
     void connectPageSignals();

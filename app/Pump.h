@@ -72,7 +72,7 @@ public slots:
      */
     void checkLevels();
     void onSimulatedTimeAdvanced(int minutes);
-
+    void chargeBattery();
 
 signals:
     /**

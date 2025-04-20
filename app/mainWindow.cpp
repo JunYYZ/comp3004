@@ -50,7 +50,8 @@ mainWindow::mainWindow(QWidget *parent)
     // wire up menu actions (QMenu::aboutToShow)
     connect(ui->menuHome, &QMenu::aboutToShow, this, &mainWindow::onActionHome);
     connect(ui->menuLock, &QMenu::aboutToShow, this, &mainWindow::onActionLock);
-
+    connect(ui->menuCharge_Battery, &QMenu::aboutToShow,
+                this,               &mainWindow::onChargeBattery);
     // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
@@ -265,5 +266,12 @@ void mainWindow::updateStatusBar(int simMinutes)
 }
 
 void mainWindow::refreshStatusBar() {
+    updateStatusBar(m_clock->elapsedMinutes());
+}
+
+void mainWindow::onChargeBattery()
+{
+    m_pump->chargeBattery();
+    // immediately refresh the status bar (time/batt/profile):
     updateStatusBar(m_clock->elapsedMinutes());
 }
