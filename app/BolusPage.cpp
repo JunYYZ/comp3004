@@ -14,7 +14,7 @@ BolusPage::BolusPage(QWidget* parent)
             this,          SLOT(on_carbsSpin_valueChanged(int)));
     connect(ui->sbCurrentBG,    SIGNAL(valueChanged(int)),
             this,          SLOT(on_bgSpin_valueChanged(int)));
-
+    connect(ui->btnDeliver, &QPushButton::clicked, this, &BolusPage::on_btnDeliver_clicked);
     // initial display
     updateSuggestion();
 }
@@ -29,6 +29,32 @@ void BolusPage::setProfileManager(ProfileManager* mgr)
     m_profileManager = mgr;
     // once we have a real manager, we can re‐compute
     updateSuggestion();
+}
+
+void BolusPage::on_btnDeliver_clicked()
+{
+  if (!m_profileManager || !m_pump) {
+    // still not hooked up correctly
+    return;
+  }
+
+  // grab the numbers
+  int grams     = ui->sbCarbs->value();
+  int currentBG = ui->sbCurrentBG->value();
+
+  // calculate suggested bolus just like updateSuggestion()
+  auto prof = m_profileManager->activeProfile();
+  double carbBolus = grams / prof.carbRatio();
+  double corrBolus = (currentBG - prof.targetBG()) / prof.correctionFactor();
+  double total     = qMax(0.0, carbBolus + corrBolus);
+
+  // actually deliver it through your pump
+  m_pump->deliverBolus(currentBG, grams);
+
+  // give the user a little feedback
+  ui->lblSuggested->setText(
+    QString::asprintf("Delivered %.1f U", total)
+  );
 }
 
 void BolusPage::on_carbsSpin_valueChanged(int /*grams*/)
