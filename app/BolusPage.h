@@ -20,10 +20,14 @@ public:
     void setProfileManager(ProfileManager* mgr);
     void setPump(Pump* p) { m_pump = p; }
 
+signals:
+    void backClicked();
+
 private slots:
     void on_carbsSpin_valueChanged(int grams);
     void on_bgSpin_valueChanged(int bg);
     void on_btnDeliver_clicked();
+    void onBtnCancelClicked();
 
 private:
     void updateSuggestion();
