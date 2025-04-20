@@ -4,6 +4,8 @@
 #define HISTORYLOGPAGE_H
 
 #include <QWidget>
+#include "SimulationClock.h"
+
 namespace Ui { class HistoryLogPage; }
 class Pump;
 
@@ -12,16 +14,19 @@ class HistoryLogPage : public QWidget
     Q_OBJECT
 
 public:
-    // ← this is the new default constructor that QtDesigner (ui_mainWindow.h)
-    //    will be able to call:
+    /// Default ctor (no pump yet)
     explicit HistoryLogPage(QWidget* parent = nullptr);
 
-    // ← your “real” constructor that takes a Pump*
+    /// “Real” ctor where you immediately inject a Pump
     explicit HistoryLogPage(Pump* pump, QWidget* parent = nullptr);
 
     ~HistoryLogPage();
 
+    /// Inject your SimulationClock so we can timestamp in sim‑time
+    void setSimulationClock(SimulationClock* clock);
+
 signals:
+    /// user tapped back
     void backRequested();
 
 private slots:
@@ -29,11 +34,13 @@ private slots:
     void on_btnBack_clicked();
 
 public slots:
+    /// Called whenever Pump emits pumpLog(...)
     void addEntry(const QString& msg);
 
 private:
     Ui::HistoryLogPage* ui;
-    Pump*                m_pump;
+    Pump*                m_pump   = nullptr;
+    SimulationClock*     m_clock  = nullptr;
 };
 
 #endif // HISTORYLOGPAGE_H

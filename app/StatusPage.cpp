@@ -7,9 +7,7 @@ StatusPage::StatusPage(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Wire buttons to signals
-    connect(ui->btnStart, &QPushButton::clicked, this, &StatusPage::startBasal);
-    connect(ui->btnStop,  &QPushButton::clicked, this, &StatusPage::stopBasal);
+   connect(ui->btnBack,  &QPushButton::clicked, this, &StatusPage::backRequested);
 }
 
 StatusPage::~StatusPage()

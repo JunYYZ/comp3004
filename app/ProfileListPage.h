@@ -24,12 +24,16 @@ signals:
     void requestAddProfile();
     void requestEditProfile(const QString &name);
     void requestDeleteProfile(const QString &name);
+    void backRequested();
+    void requestActivateProfile(const QString&);
 
 private slots:
     void onBtnAddClicked();
     void onBtnEditClicked();
     void onBtnDeleteClicked();
     void refreshProfiles();               // reload names from the manager
+    void onBtnBackClicked();
+    void onBtnActivateClicked();
 
 private:
     Ui::ProfileListPage *ui;

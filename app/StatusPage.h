@@ -21,8 +21,7 @@ public:
     void setBatteryLevel(int percent);
 
 signals:
-    void startBasal();
-    void stopBasal();
+    void backRequested();
 
 private:
     Ui::StatusPage *ui;

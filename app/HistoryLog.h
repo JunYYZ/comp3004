@@ -1,23 +1,25 @@
 #ifndef HISTORYLOG_H
 #define HISTORYLOG_H
-#include <QObject>
+
+#include <QString>
 #include <QDateTime>
-struct HistoryEntry
+
+class HistoryLog
 {
-    QDateTime ts;
-    QString text;
-};
-class HistoryLog : public QObject
-{
-    Q_OBJECT
 public:
-    explicit HistoryLog(QObject *p = nullptr);
-    void add(const QString &txt);
-    const QList<HistoryEntry> &entries() const { return m_items; }
-signals:
-    void newEntry(const HistoryEntry &e);
+    // existing single‐arg ctor
+    explicit HistoryLog(const QString &desc);
+
+    // new two‐arg ctor
+    HistoryLog(const QDateTime &ts, const QString &desc);
+
+    QDateTime timestamp() const;
+    QString   description() const;
 
 private:
-    QList<HistoryEntry> m_items;
+    QDateTime m_timestamp;
+    QString   m_description;
 };
-#endif
+
+#endif // HISTORYLOG_H
+

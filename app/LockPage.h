@@ -14,6 +14,7 @@ class LockPage : public QWidget
 public:
     explicit LockPage(QWidget *parent = nullptr);
     ~LockPage();
+    void reset();
 
 signals:
     void authenticated();     // emitted when PIN OK

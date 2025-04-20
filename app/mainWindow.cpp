@@ -12,12 +12,15 @@
 #include "SettingsPage.h"
 #include "ControlIQPage.h"
 
+#include <QDebug>
 #include <QTimer>
-#include <QDateTime>
+#include <QTime>      // for converting minutes→hh:mm:ss
 
 mainWindow::mainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::mainWindow)
+    // 1000 ms real interval, 5 simulated minutes per tick:
+    , m_clock(new SimulationClock(1000, 5, this))
     , m_pump(new Pump(this))
     , m_profileManager(new ProfileManager(this))
     , pageHome(new HomePage(this))
@@ -34,10 +37,22 @@ mainWindow::mainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // supply the clock to pages that need it:
+    pageHistoryLog->setSimulationClock(m_clock);
+
+    // menuHome is disabled until unlocked
+    ui->menuHome->setEnabled(false);
+
     ui->pageBolus->setProfileManager( m_profileManager );
     pageProfileList->setProfileManager(m_profileManager);
 
-    // Add each page widget into the QstackedPages in the same order:
+
+    // wire up menu actions (QMenu::aboutToShow)
+    connect(ui->menuHome, &QMenu::aboutToShow, this, &mainWindow::onActionHome);
+    connect(ui->menuLock, &QMenu::aboutToShow, this, &mainWindow::onActionLock);
+    connect(ui->menuCharge_Battery, &QMenu::aboutToShow,
+                this,               &mainWindow::onChargeBattery);
+    // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
     ui->stackedPages->addWidget(pageStatus);
@@ -53,19 +68,28 @@ mainWindow::mainWindow(QWidget *parent)
     // Start locked
     ui->stackedPages->setCurrentWidget(pageLock);
 
-    // Hook up all the signals/slots for navigation
+    // wire all the navigation signals
     connectPageSignals();
+    connect(m_clock, &SimulationClock::tick,
+            this,    &mainWindow::refreshStatusBar);
+    connect(m_clock, &SimulationClock::tick,
+            m_pump,   &Pump::onSimulatedTimeAdvanced);
 
-    // Kick off a timer for clock + battery indicator
-    QTimer *t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, &mainWindow::updateStatusBar);
-    t->start(1000);
-    updateStatusBar();
+    m_clock->start();
+
+    // show initial “00:00” battery/profile
+    updateStatusBar(0);
+
+    // whenever a profile changes, update our statusbar
+    connect(m_profileManager, &ProfileManager::profileChanged,
+        this,                &mainWindow::refreshStatusBar,
+        Qt::QueuedConnection);
+
 }
 
 mainWindow::~mainWindow()
 {
-    delete ui;  // pages are children and will delete themselves
+    delete ui;
 }
 
 void mainWindow::connectPageSignals()
@@ -82,109 +106,117 @@ void mainWindow::connectPageSignals()
     connect(pageHome, &HomePage::gotoSettings,   this, &mainWindow::onActionSettings);
     connect(pageHome, &HomePage::gotoControlIQ,  this, &mainWindow::onActionControlIQ);
 
-    // --- LockPage unlock (via NumberKeypad inside LockPage) ---
+    // --- LockPage unlock ---
     connect(pageLock, &LockPage::authenticated,  this, &mainWindow::onActionHome);
 
-    // --- HistoryLogPage go back ----
+    // --- HistoryLogPage back ---
     connect(pageHistoryLog, &HistoryLogPage::backRequested,
             this, &mainWindow::onActionHome);
 
+    // --- ProfileListPage ---
     connect(pageProfileList, &ProfileListPage::requestAddProfile,
             this,             &mainWindow::onAddProfile);
     connect(pageProfileList, &ProfileListPage::requestEditProfile,
             this,             &mainWindow::onEditProfile);
     connect(pageProfileList, &ProfileListPage::requestDeleteProfile,
             this,             &mainWindow::onDeleteProfile);
-    connect(pageProfileEditor, &ProfileEditorPage::addProfile,
-                this,                &mainWindow::onEditorAddProfile);
-    connect(pageProfileEditor, &ProfileEditorPage::updateProfile,
-                this,                &mainWindow::onEditorUpdateProfile);
-    connect(pageProfileEditor, &ProfileEditorPage::cancel,
-                this,                &mainWindow::onActionProfileList);
+    connect(pageProfileList, &ProfileListPage::requestActivateProfile,
+            this,             &mainWindow::onActivateProfile);
+    connect(pageProfileList, &ProfileListPage::backRequested,
+            this,             &mainWindow::onActionHome);
 
+    // --- ProfileEditor ---
+    connect(pageProfileEditor, &ProfileEditorPage::addProfile,
+            this,                &mainWindow::onEditorAddProfile);
+    connect(pageProfileEditor, &ProfileEditorPage::updateProfile,
+            this,                &mainWindow::onEditorUpdateProfile);
+    connect(pageProfileEditor, &ProfileEditorPage::cancel,
+            this,                &mainWindow::onEditorCancel);
+
+    // --- ControlIQ & Settings back ---
+    connect(pageControlIQ, &ControlIQPage::backClicked,
+            this,              &mainWindow::onActionHome);
+    connect(pageSettings, &SettingsPage::backRequested,
+            this,               &mainWindow::onActionHome);
+
+    // --- StatusPage back ---
+    connect(pageStatus, &StatusPage::backRequested,
+            this,               &mainWindow::onActionHome);
 }
+
+// ----------------------------------------------------------------
+// Navigation slots
+// ----------------------------------------------------------------
 
 void mainWindow::onActionHome()
 {
+    qDebug() << "Home clicked!";
+    pageLock->reset();           // ensure lock screen is fresh
+    ui->menuHome->setEnabled(true);
     ui->stackedPages->setCurrentWidget(pageHome);
 }
 
-void mainWindow::onActionStatus()
+void mainWindow::onActionLock()
 {
-    ui->stackedPages->setCurrentWidget(pageStatus);
+    qDebug() << "Lock menu clicked!";
+    pageLock->reset();
+    ui->menuHome->setEnabled(false);
+    ui->stackedPages->setCurrentWidget(pageLock);
 }
+
+void mainWindow::onActionStatus()
+{ ui->stackedPages->setCurrentWidget(pageStatus); }
 
 void mainWindow::onActionBolus()
-{
-    ui->stackedPages->setCurrentWidget(pageBolus);
-}
+{ ui->stackedPages->setCurrentWidget(pageBolus); }
 
 void mainWindow::onActionGraph()
-{
-    ui->stackedPages->setCurrentWidget(pageGraph);
-}
+{ ui->stackedPages->setCurrentWidget(pageGraph); }
 
 void mainWindow::onActionHistoryLog()
-{
-    ui->stackedPages->setCurrentWidget(pageHistoryLog);
-}
+{ ui->stackedPages->setCurrentWidget(pageHistoryLog); }
 
 void mainWindow::onActionInsulin()
 {
-    // if you have a dedicated Insulin page:
-    // ui->stackedPages->setCurrentWidget(pageInsulin);
-    // otherwise reuse Bolus or Settings as appropriate
+    // reuse BolusPage or whatever is appropriate
+    ui->stackedPages->setCurrentWidget(pageBolus);
 }
 
 void mainWindow::onLoadCartridge()
-{
-    // maybe show a dialog, or:
-    ui->stackedPages->setCurrentWidget(pageSettings);
-}
+{ ui->stackedPages->setCurrentWidget(pageSettings); }
 
 void mainWindow::onActionProfileList()
-{
-    ui->stackedPages->setCurrentWidget(pageProfileList);
-}
+{ ui->stackedPages->setCurrentWidget(pageProfileList); }
 
 void mainWindow::onActionPumpInfo()
-{
-    ui->stackedPages->setCurrentWidget(pagePumpInfo);
-}
+{ ui->stackedPages->setCurrentWidget(pagePumpInfo); }
 
 void mainWindow::onActionSettings()
-{
-    ui->stackedPages->setCurrentWidget(pageSettings);
-}
+{ ui->stackedPages->setCurrentWidget(pageSettings); }
 
 void mainWindow::onActionControlIQ()
-{
-    ui->stackedPages->setCurrentWidget(pageControlIQ);
-}
+{ ui->stackedPages->setCurrentWidget(pageControlIQ); }
 
-void mainWindow::updateStatusBar()
-{
-    // current time
-    QString t = QDateTime::currentDateTime().toString("hh:mm:ss");
-    // dummy battery -- replace with your Pump::batteryLevel()
-    int battery = 85;
-    ui->statusbar->showMessage(
-        QString("Time: %1    Battery: %2%").arg(t).arg(battery)
-    );
-}
+// ----------------------------------------------------------------
+// Profile CRUD
+// ----------------------------------------------------------------
 
 void mainWindow::onAddProfile()
 {
-    // clear out whatever your editor page is showing...
     pageProfileEditor->clearFields();
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
 }
 
+void mainWindow::onActivateProfile(const QString &name)
+{
+    if (!m_profileManager->selectProfile(name)) {
+        qWarning() << "Failed to activate profile" << name;
+    }
+}
+
 void mainWindow::onEditProfile(const QString &name)
 {
-    // lookup via our new helper
     Profile p = m_profileManager->getProfileByName(name);
-    // pre‑load fields and switch to Edit mode
     pageProfileEditor->setProfile(p);
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
 }
@@ -192,29 +224,54 @@ void mainWindow::onEditProfile(const QString &name)
 void mainWindow::onDeleteProfile(const QString &name)
 {
     m_profileManager->removeProfile(name);
-    // the profileChanged() signal will fire and refresh the list automatically
 }
 
 void mainWindow::onEditorAddProfile(const Profile& p)
 {
-    // add it to the manager
     m_profileManager->addProfile(p);
-    // then go back to the list page so they can see it
     ui->stackedPages->setCurrentWidget(pageProfileList);
 }
 
-void mainWindow::onEditorUpdateProfile(const QString& originalName,
-                                       const Profile& p)
+void mainWindow::onEditorUpdateProfile(const QString& orig, const Profile& p)
 {
-    // update in the manager
-    m_profileManager->updateProfile(originalName, p);
-    // back to list
+    m_profileManager->updateProfile(orig, p);
     ui->stackedPages->setCurrentWidget(pageProfileList);
 }
 
 void mainWindow::onEditorCancel()
 {
-    // just go back to the list
     ui->stackedPages->setCurrentWidget(pageProfileList);
 }
 
+// ----------------------------------------------------------------
+// Status bar updater now takes simulated minutes
+// ----------------------------------------------------------------
+
+void mainWindow::updateStatusBar(int simMinutes)
+{
+    // convert minutes→ hh:mm:ss
+    QTime t(0, 0);
+    t = t.addSecs(simMinutes * 60);
+
+    int battery = m_pump->batteryLevel();
+    QString prof = m_profileManager->activeProfile().name();
+    if (prof.isEmpty()) prof = QLatin1String("<none>");
+
+    ui->statusbar->showMessage(
+        QString("Time: %1    Battery: %2%    Profile: %3")
+        .arg(t.toString("hh:mm:ss"))
+        .arg(battery)
+        .arg(prof)
+    );
+}
+
+void mainWindow::refreshStatusBar() {
+    updateStatusBar(m_clock->elapsedMinutes());
+}
+
+void mainWindow::onChargeBattery()
+{
+    m_pump->chargeBattery();
+    // immediately refresh the status bar (time/batt/profile):
+    updateStatusBar(m_clock->elapsedMinutes());
+}

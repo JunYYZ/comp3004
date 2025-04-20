@@ -46,5 +46,5 @@ void SettingsPage::on_btnSave_clicked()
 
 void SettingsPage::on_btnCancel_clicked()
 {
-    emit cancelClicked();
+    emit backRequested();
 }

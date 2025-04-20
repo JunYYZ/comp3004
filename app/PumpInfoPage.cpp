@@ -31,23 +31,6 @@ void PumpInfoPage::setFirmwareVersion(const QString &ver)
     ui->lblFWVal->setText(ver);
 }
 
-void PumpInfoPage::setInsulinRemaining(int units)
-{
-    ui->barInsulinVal->setRange(0, 300);
-    ui->barInsulinVal->setValue(units);
-}
-
-void PumpInfoPage::setBatteryLevel(int percent)
-{
-    ui->barBatteryVal->setRange(0, 100);
-    ui->barBatteryVal->setValue(percent);
-}
-
-void PumpInfoPage::setCGMStatus(const QString &st)
-{
-    ui->lblCGMVal->setText(st);
-}
-
 void PumpInfoPage::on_btnBackInfo_clicked()
 {
     emit backClicked();

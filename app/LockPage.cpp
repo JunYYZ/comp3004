@@ -50,3 +50,12 @@ void LockPage::onOkPressed()
         ui->lblPinDisplay->setText("");
     }
 }
+
+void LockPage::reset()
+{
+    // clear whatever widget shows the PIN — adjust the object name as needed
+    ui->lblPinDisplay->clear();
+
+    // if you also keep an internal buffer of digits, clear it:
+    m_currentPin.clear();
+}

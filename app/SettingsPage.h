@@ -31,7 +31,7 @@ public:
 
 signals:
     void saveClicked();
-    void cancelClicked();
+    void backRequested();
 
 private:
     Ui::SettingsPage *ui;

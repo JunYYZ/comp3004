@@ -4,10 +4,14 @@
 #include <QObject>
 #include <QVector>
 #include <QString>
+#include <QDateTime>
 #include "Profile.h"
 #include "HistoryLog.h"
 #include "BolusCalculator.h"
 #include "ErrorHandler.h"
+#include "SimulationClock.h"
+
+class SimulationClock;
 
 /**
  * @brief States the pump can be in.
@@ -31,13 +35,15 @@ class Pump : public QObject
 public:
     explicit Pump(QObject* parent = nullptr);
 
+    void setSimulationClock(SimulationClock* clock);
+
     // --- Getters ---
     int batteryLevel() const;      ///< Battery percentage [0–100]
     int insulinLevel() const;      ///< Insulin units remaining
     PumpState state() const;       ///< Current pump state
 
     /** @returns the full history of timestamped events */
-    QVector<HistoryLog> history() const { return m_history; }
+    const QVector<HistoryLog> history() const { return m_history; }
 
     // --- Profile Management ---
     void addProfile(const Profile& p);
@@ -65,6 +71,8 @@ public slots:
      *        Intended to be connected to a timer or SimulationClock tick.
      */
     void checkLevels();
+    void onSimulatedTimeAdvanced(int minutes);
+    void chargeBattery();
 
 signals:
     /**
@@ -72,6 +80,7 @@ signals:
      * @param msg  The log message.
      */
     void pumpLog(const QString& msg);
+    void batteryLevelChanged(int newBattery);
 
 private:
     /**
@@ -80,8 +89,10 @@ private:
      */
     void logEvent(const QString& desc);
 
+
     int m_battery;                    ///< Battery level [%]
     int m_insulin;                    ///< Insulin remaining [units]
+    int m_totalSimulatedMinutes = 0;  ///< accumulate
     PumpState m_state;                ///< Current state
 
     QVector<Profile> m_profiles;      ///< User profiles
@@ -89,6 +100,9 @@ private:
 
     QVector<HistoryLog> m_history;    ///< Chronological event history
     ErrorHandler* m_errorHandler;     ///< Raises and clears warnings
+    SimulationClock* m_clock = nullptr;
+    QDateTime m_simTime;
+
 };
 
 #endif // PUMP_H

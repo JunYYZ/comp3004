@@ -6,6 +6,7 @@
 #include "ProfileManager.h"
 #include "HistoryLogPage.h"
 #include "ProfileEditorPage.h"
+#include "SimulationClock.h"
 
 class HomePage;
 class LockPage;
@@ -45,9 +46,11 @@ private slots:
     void onActionPumpInfo();
     void onActionSettings();
     void onActionControlIQ();
+    void onActionLock();
 
     //profile-list actions
     void onAddProfile();
+    void onActivateProfile(const QString &name);
     void onEditProfile(const QString &name);
     void onDeleteProfile(const QString &name);
     void onEditorAddProfile(const Profile& p);
@@ -55,7 +58,9 @@ private slots:
     void onEditorCancel();
 
     // status bar updates
-    void updateStatusBar();
+    void updateStatusBar(int simMinutes);
+    void refreshStatusBar();
+    void onChargeBattery();
 
 private:
     void connectPageSignals();
@@ -63,6 +68,7 @@ private:
     Ui::mainWindow   *ui;
 
     // one member per page
+    SimulationClock*  m_clock;
     Pump            *m_pump;
     HistoryLogPage* m_historypage;
     ProfileManager  *m_profileManager;
