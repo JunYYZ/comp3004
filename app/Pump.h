@@ -73,6 +73,7 @@ public slots:
     void checkLevels();
     void onSimulatedTimeAdvanced(int minutes);
     void chargeBattery();
+    void fillInsulin();
 
 signals:
     /**
@@ -81,16 +82,13 @@ signals:
      */
     void pumpLog(const QString& msg);
     void batteryLevelChanged(int newBattery);
-<<<<<<< HEAD
-<<<<<<< HEAD
+    void warningRaised (ErrorHandler::Warning w, QString msg);
+    void warningCleared(ErrorHandler::Warning w);
+
 
     void bolusDelivered(double units, int carbs);
     void warningRaised (ErrorHandler::Warning w, QString msg);
     void warningCleared(ErrorHandler::Warning w);
-=======
->>>>>>> parent of e5ef163 (Save work before push)
-=======
->>>>>>> parent of 7fd2d63 (Merge pull request #6 from JunYYZ/base-build5)
 
 private:
     /**
