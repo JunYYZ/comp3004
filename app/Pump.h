@@ -111,10 +111,4 @@ private:
 };
 
 #endif // PUMP_H
-es and clears warnings
-    SimulationClock* m_clock = nullptr;
-    QDateTime m_simTime;
 
-};
-
-#endif // PUMP_H

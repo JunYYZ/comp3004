@@ -20,11 +20,3 @@ private:
     QScatterSeries* bgDots;
     int currentTimeStep;
 };
-ed:
-    void paintEvent(QPaintEvent *event) override;
-
-private:
-    QVector<QPointF> m_points;
-};
-
-#endif // GRAPHWIDGET_H
