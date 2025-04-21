@@ -35,6 +35,7 @@ mainWindow::mainWindow(QWidget *parent)
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
 {
+    m_profileManager->loadProfilesFromFile();
     ui->setupUi(this);
 
     // supply the clock to pages that need it:
@@ -84,6 +85,7 @@ mainWindow::mainWindow(QWidget *parent)
 
 mainWindow::~mainWindow()
 {
+    m_profileManager->saveProfilesToFile();
     delete ui;
 }
 
