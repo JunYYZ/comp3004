@@ -27,6 +27,3 @@ void StatusPage::setBasalRate(double rate) {
     ui->valBasal->setText(QString::number(rate, 'f', 2));
 }
 
-void StatusPage::setBatteryLevel(int percent) {
-    ui->barBattery->setValue(percent);
-}

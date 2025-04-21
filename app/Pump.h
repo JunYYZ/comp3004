@@ -73,6 +73,7 @@ public slots:
     void checkLevels();
     void onSimulatedTimeAdvanced(int minutes);
     void chargeBattery();
+    void fillInsulin();
 
 signals:
     /**
@@ -81,6 +82,8 @@ signals:
      */
     void pumpLog(const QString& msg);
     void batteryLevelChanged(int newBattery);
+    void warningRaised (ErrorHandler::Warning w, QString msg);
+    void warningCleared(ErrorHandler::Warning w);
 
 private:
     /**
