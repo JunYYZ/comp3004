@@ -25,6 +25,11 @@ Pump::Pump(QObject *parent)
                              .arg(int(w)));
             });
 
+    connect(m_errorHandler, &ErrorHandler::warningRaised,
+            this, &Pump::warningRaised);
+    connect(m_errorHandler, &ErrorHandler::warningCleared,
+            this, &Pump::warningCleared);
+
     logEvent("Pump initialized");
     checkLevels();  // catch any startup warnings
 }
@@ -68,6 +73,7 @@ void Pump::addProfile(const Profile &p)
     if (m_activeProfileIndex < 0)
         m_activeProfileIndex = 0;
     logEvent(QString("Profile added: %1").arg(p.name()));
+
 }
 
 bool Pump::selectActiveProfile(const QString &name)
@@ -120,7 +126,7 @@ void Pump::resumeInsulin()
 
 void Pump::deliverBolus(int currentBG, int carbs)
 {
-    if (m_activeProfileIndex < 0) {
+    if (m_activeProfileIndex <0) {
         emit pumpLog("Error: no active profile");
         return;
     }
@@ -174,7 +180,7 @@ void Pump::onSimulatedTimeAdvanced(int minutes)
 {
     // 1) Advance your own clock if you have one
     m_simTime = m_simTime.addSecs(minutes * 60);
-    logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
+//    logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
 
     // 2) Update your total simulated‐time counter
     m_totalSimulatedMinutes += minutes;
@@ -188,9 +194,12 @@ void Pump::onSimulatedTimeAdvanced(int minutes)
     // 4) If it really changed, store it, log it, and emit:
     if (newBattery != m_battery) {
         m_battery = newBattery;
-        logEvent(QString("Battery level: %1%").arg(m_battery));
+//        logEvent(QString("Battery level: %1%").arg(m_battery));
         emit batteryLevelChanged(m_battery);
     }
+
+    checkLevels();
+
 }
 
 void Pump::logEvent(const QString &desc)
@@ -224,6 +233,14 @@ void Pump::chargeBattery()
       emit batteryLevelChanged(m_battery);
       // **reset the drain baseline:**
       m_totalSimulatedMinutes = 0;
+      m_errorHandler->clear(ErrorHandler::LowBattery);
     }
+}
+
+void Pump::fillInsulin(){
+    m_insulin = 300;
+    logEvent("Cartridge refilled to 300 u");
+    emit pumpLog("Insulin refilled");
+    m_errorHandler->clear(ErrorHandler::LowInsulin);
 }
 
