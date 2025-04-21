@@ -33,9 +33,6 @@ public:
     Pump* pump() const { return m_pump; }
     ProfileManager* profileManager() const { return m_profileManager;}
 
-signals:
-    void guiLog(const QString &msg);
-
 private slots:
     // navigation
     void onActionHome();
@@ -65,17 +62,14 @@ private slots:
     void refreshStatusBar();
     void onChargeBattery();
 
-    void onPumpWarning(ErrorHandler::Warning w, const QString& msg);
-    void logEvent(const QString &desc);
-
 private:
     void connectPageSignals();
 
-    QVector<HistoryLog> m_history;    ///< Chronological event history
     Ui::mainWindow   *ui;
 
     // one member per page
     SimulationClock*  m_clock;
+<<<<<<< HEAD
 <<<<<<< HEAD
     Pump*             m_pump;
     CGM*              m_cgm;         // remove
@@ -96,6 +90,8 @@ private:
     QDateTime m_simTime;
 
 =======
+=======
+>>>>>>> parent of 7fd2d63 (Merge pull request #6 from JunYYZ/base-build5)
     Pump            *m_pump;
     HistoryLogPage* m_historypage;
     ProfileManager  *m_profileManager;

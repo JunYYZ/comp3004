@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     // --- Wire up the simulation ---
     QObject::connect(clock, &SimulationClock::tick,
                      cgm,   &CGM::onTick);
-//    QObject::connect(clock, &SimulationClock::tick,
-//                     pump,  &Pump::checkLevels);
+    QObject::connect(clock, &SimulationClock::tick,
+                     pump,  &Pump::checkLevels);
 
     // When CGM has a new reading, drive Control‑IQ and log
     QObject::connect(cgm, &CGM::newReading,
@@ -56,10 +56,7 @@ int main(int argc, char *argv[])
                          qDebug() << msg;
                      });
 
-    QObject::connect(pump,   &Pump::pumpLog,
-                     logger, &EventLogger::log);
-
-    // --- Start basal EventLogger*  logger = new EventLogger(&app); and the sim clock ---
+    // --- Start basal insulin and the sim clock ---
     pump->startInsulin();
 
     // --- Launch main window ---
