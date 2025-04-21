@@ -40,6 +40,7 @@ mainWindow::mainWindow(QWidget *parent)
     , m_bgSim(new BGSimulator(this))
 
 {
+    m_profileManager->loadProfilesFromFile();
     ui->setupUi(this);
 
     // supply the clock to pages that need it:
@@ -131,6 +132,7 @@ mainWindow::mainWindow(QWidget *parent)
 
 mainWindow::~mainWindow()
 {
+    m_profileManager->saveProfilesToFile();
     delete ui;
 }
 

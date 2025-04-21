@@ -1,5 +1,9 @@
 
 #include "ProfileManager.h"
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+
 
 ProfileManager::ProfileManager(QObject *parent)
     : QObject(parent), m_activeIndex(-1) //no profile yet
@@ -89,4 +93,62 @@ Profile ProfileManager::activeProfile() const
         return m_profiles[m_activeIndex];
     return Profile("", 0, 0, 0); //fallback if empty
 }
+
+// --- SAVE PROFILES TO FILE ---
+void ProfileManager::saveProfilesToFile(const QString& filename) const
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "could not save profiles to" << filename;
+        return;
+    }
+
+    QTextStream out(&file);
+    for (const Profile& p : m_profiles) {
+        out << p.name() << ","
+            << p.carbRatio() << ","
+            << p.correctionFactor() << ","
+            << p.targetBG() << "\n";
+    }
+
+    file.close();
+}
+
+// --- LOAD PROFILES FROM FILE ---
+void ProfileManager::loadProfilesFromFile(const QString& filename)
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "no profile file found:" << filename;
+        return;
+    }
+
+    m_profiles.clear();
+    m_activeIndex = -1;
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty()) continue;
+
+        QStringList parts = line.split(',');
+        if (parts.size() != 4) continue; // skip corrupted lines
+
+        QString name = parts[0];
+        double carbRatio = parts[1].toDouble();
+        double correctionFactor = parts[2].toDouble();
+        int targetBG = parts[3].toInt();
+
+        Profile profile(name, carbRatio, correctionFactor, targetBG);
+        m_profiles.append(profile);
+    }
+
+    if (!m_profiles.isEmpty())
+        m_activeIndex = 0;
+
+    file.close();
+    emit profileChanged(); // so UI updates
+}
+
+
 
