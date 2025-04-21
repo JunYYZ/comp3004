@@ -85,6 +85,11 @@ signals:
     void warningRaised (ErrorHandler::Warning w, QString msg);
     void warningCleared(ErrorHandler::Warning w);
 
+
+    void bolusDelivered(double units, int carbs);
+    void warningRaised (ErrorHandler::Warning w, QString msg);
+    void warningCleared(ErrorHandler::Warning w);
+
 private:
     /**
      * @brief Appends a timestamped entry to the internal history.

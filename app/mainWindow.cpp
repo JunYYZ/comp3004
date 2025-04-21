@@ -94,9 +94,6 @@ mainWindow::mainWindow(QWidget *parent)
 
     connect(this, &mainWindow::guiLog,
             pageHistoryLog, &HistoryLogPage::addEntry);
-
-
-
 }
 
 mainWindow::~mainWindow()
@@ -231,7 +228,12 @@ void mainWindow::onActivateProfile(const QString &name)
     if (!m_profileManager->selectProfile(name)) {
         qWarning() << "Failed to activate profile" << name;
     }
+
+
+    m_pump->selectActiveProfile(name);
+
     logEvent("activated profile");
+
 }
 
 void mainWindow::onEditProfile(const QString &name)

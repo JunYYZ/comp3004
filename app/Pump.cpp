@@ -126,7 +126,10 @@ void Pump::resumeInsulin()
 
 void Pump::deliverBolus(int currentBG, int carbs)
 {
+
     if (m_activeProfileIndex <0) {
+
+    qDebug() << "[Pump] deliverBolus called with BG:" << currentBG << "Carbs:" << carbs;
         emit pumpLog("Error: no active profile");
         return;
     }

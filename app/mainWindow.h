@@ -76,21 +76,26 @@ private:
 
     // one member per page
     SimulationClock*  m_clock;
+
     QDateTime m_simTime;
-    Pump            *m_pump;
-    HistoryLogPage* m_historypage;
-    ProfileManager  *m_profileManager;
-    HomePage        *pageHome;
-    LockPage        *pageLock;
-    StatusPage      *pageStatus;
-    BolusPage       *pageBolus;
-    GraphPage       *pageGraph;
-    HistoryLogPage  *pageHistoryLog;
-    ProfileListPage *pageProfileList;
-    ProfileEditorPage *pageProfileEditor;
-    PumpInfoPage    *pagePumpInfo;
-    SettingsPage    *pageSettings;
-    ControlIQPage   *pageControlIQ;
+
+    Pump*             m_pump;
+    CGM*              m_cgm;         // remove
+    HistoryLogPage*   m_historypage;
+    ProfileManager*   m_profileManager;
+    HomePage*         pageHome;
+    LockPage*         pageLock;
+    StatusPage*       pageStatus;
+    BolusPage*        pageBolus;
+    GraphPage*        pageGraph;
+    HistoryLogPage*   pageHistoryLog;
+    ProfileListPage*  pageProfileList;
+    ProfileEditorPage* pageProfileEditor;
+    PumpInfoPage*     pagePumpInfo;
+    SettingsPage*     pageSettings;
+    ControlIQPage*    pageControlIQ;
+    BGSimulator*      m_bgSim;
+
 };
 
 #endif // MAINWINDOW_H
