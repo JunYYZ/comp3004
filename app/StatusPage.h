@@ -18,6 +18,7 @@ public:
     void setCurrentBG(double bg);
     void setInsulinOnBoard(double iob);
     void setBasalRate(double rate);
+	void setBatteryLevel(int percent);
 
 signals:
     void backRequested();
