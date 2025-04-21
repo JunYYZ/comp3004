@@ -1,11 +1,14 @@
 # app/app.pro
 
+QT += charts
+
 QT       += core gui widgets
 CONFIG   += c++17
 TEMPLATE = app
 TARGET   = tslimSimulator
 
 SOURCES += \
+    BGSimulator.cpp \
     BolusPage.cpp \
     ControlIQPage.cpp \
     GraphPage.cpp \
@@ -35,6 +38,7 @@ SOURCES += \
     mainWindow.cpp
 
 HEADERS += \
+    BGSimulator.h \
     BolusPage.h \
     ControlIQPage.h \
     GraphPage.h \
