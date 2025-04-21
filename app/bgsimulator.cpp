@@ -1,36 +1,47 @@
 #include "BGSimulator.h"
-#include "Profile.h"
+#include <QDebug>
+#include <algorithm>
+#include <cmath>
 
-BGSimulator::BGSimulator(QObject* parent) : QObject(parent)
-{
+BGSimulator::BGSimulator(QObject* parent)
+    : QObject(parent) {}
+
+void BGSimulator::setProfile(const Profile& profile) {
+    this->carbRatio = profile.carbRatio();
+    this->correctionFactor = profile.correctionFactor();
+    qDebug() << "[BGSim] Profile set: CR =" << carbRatio << ", CF =" << correctionFactor;
 }
 
-void BGSimulator::setProfile(const Profile& profile)
-{
-    carbRatio = profile.getCarbRatio();
-    correctionFactor = profile.getCorrectionFactor();
+void BGSimulator::onBolusDelivered(double units, int carbs) {
+    activeInsulin += units;
+    double mmolFromCarbs = carbs / carbRatio;
+    carbEffect += mmolFromCarbs;
+    qDebug() << "[BGSim] Bolus received: " << units << "u, Carbs:" << carbs
+             << "-> Added " << mmolFromCarbs << " mmol from carbs.";
 }
 
-void BGSimulator::onBolusDelivered(int bg, int carbs)
-{
-    // Simulate effect: carbs push BG up, insulin pulls it down
-    carbEffect += carbs * 0.1; // e.g. 10g → +1 mmol/L
-    activeInsulin += (carbs / carbRatio); // bolus units delivered
-}
+void BGSimulator::onTick() {
+    if (correctionFactor <= 0 || carbRatio <= 0) {
+        qWarning() << "[BGSim] Invalid profile settings: CF or CR is zero.";
+        return;
+    }
 
-void BGSimulator::onTick(int /*minutes*/)
-{
-    // Simulate insulin effect
-    currentBG -= activeInsulin * correctionFactor * 0.05;
-    activeInsulin *= 0.9; // decay
+    double carbAbsorbRate = 15.0;
+    double carbAbsorbed = std::min(carbEffect, carbAbsorbRate);
+    double carbRise = carbAbsorbed * (1.0 / carbRatio);
+    carbEffect -= carbAbsorbed;
 
-    // Simulate carb effect
-    currentBG += carbEffect * 0.05;
-    carbEffect *= 0.9; // digestion slows
+    double insulinUsed = activeInsulin * 0.05;
+    double insulinDrop = insulinUsed * (1.0 / correctionFactor);
+    activeInsulin -= insulinUsed;
 
-    // Clamp BG
-    if (currentBG < 3.0) currentBG = 3.0;
-    if (currentBG > 20.0) currentBG = 20.0;
+    double deltaBG = carbRise - insulinDrop;
+    currentBG = std::clamp(currentBG + deltaBG, 2.0, 15.0);
+
+    qDebug() << "[Graph] Logging BG:" << currentBG
+             << "| Insulin:" << activeInsulin
+             << "| CarbEffect:" << carbEffect
+             << "| ΔBG: + " << carbRise << " - " << insulinDrop << " = " << deltaBG;
 
     emit newReading(currentBG);
 }
