@@ -243,4 +243,3 @@ void Pump::fillInsulin(){
     emit pumpLog("Insulin refilled");
     m_errorHandler->clear(ErrorHandler::LowInsulin);
 }
-
