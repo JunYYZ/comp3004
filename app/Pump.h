@@ -82,9 +82,6 @@ signals:
      */
     void pumpLog(const QString& msg);
     void batteryLevelChanged(int newBattery);
-    void warningRaised (ErrorHandler::Warning w, QString msg);
-    void warningCleared(ErrorHandler::Warning w);
-
 
     void bolusDelivered(double units, int carbs);
     void warningRaised (ErrorHandler::Warning w, QString msg);
@@ -108,6 +105,13 @@ private:
 
     QVector<HistoryLog> m_history;    ///< Chronological event history
     ErrorHandler* m_errorHandler;     ///< Raises and clears warnings
+    SimulationClock* m_clock = nullptr;
+    QDateTime m_simTime;
+
+};
+
+#endif // PUMP_H
+es and clears warnings
     SimulationClock* m_clock = nullptr;
     QDateTime m_simTime;
 

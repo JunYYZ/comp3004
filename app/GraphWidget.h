@@ -1,21 +1,26 @@
-#ifndef GRAPHWIDGET_H
-#define GRAPHWIDGET_H
+#pragma once
 
 #include <QWidget>
-#include <QVector>
-#include <QPointF>
+#include <QtCharts/QChartView>
+#include <QtCharts/QChart>
+#include <QtCharts/QScatterSeries>
 
-/// Simple line‑plot widget: draws axes and a polyline of the supplied points.
+QT_CHARTS_USE_NAMESPACE
+
 class GraphWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit GraphWidget(QWidget *parent = nullptr);
+    explicit GraphWidget(QWidget* parent = nullptr);
+    void addBGPoint(int timeStep, double bg);
 
-    /// Supply new (x=time‑seconds, y=BG‑mmol/L) points and repaint
-    void setData(const QVector<QPointF> &points);
-
-protected:
+private:
+    QChart* chart;
+    QChartView* chartView;
+    QScatterSeries* bgDots;
+    int currentTimeStep;
+};
+ed:
     void paintEvent(QPaintEvent *event) override;
 
 private:
