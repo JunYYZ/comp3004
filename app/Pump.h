@@ -82,10 +82,13 @@ signals:
      */
     void pumpLog(const QString& msg);
     void batteryLevelChanged(int newBattery);
+<<<<<<< HEAD
 
     void bolusDelivered(double units, int carbs);
     void warningRaised (ErrorHandler::Warning w, QString msg);
     void warningCleared(ErrorHandler::Warning w);
+=======
+>>>>>>> parent of e5ef163 (Save work before push)
 
 private:
     /**

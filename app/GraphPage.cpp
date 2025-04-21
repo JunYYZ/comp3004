@@ -12,8 +12,3 @@ GraphPage::~GraphPage()
 {
     delete ui;
 }
-
-void GraphPage::addBGPoint(int timeStep, double bg) {
-    ui->graphWidget->addBGPoint(timeStep, bg);
-}
-

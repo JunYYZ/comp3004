@@ -1,7 +1,6 @@
 #include "Pump.h"
 #include "SimulationClock.h"
 #include <cmath>
-#include <QDebug>
 
 Pump::Pump(QObject *parent)
     : QObject(parent),
@@ -127,60 +126,42 @@ void Pump::resumeInsulin()
 
 void Pump::deliverBolus(int currentBG, int carbs)
 {
+<<<<<<< HEAD
     qDebug() << "[Pump] deliverBolus called with BG:" << currentBG << "Carbs:" << carbs;
   
+=======
+>>>>>>> parent of e5ef163 (Save work before push)
     if (m_activeProfileIndex < 0) {
-        qDebug() << "[Pump] No active profile set!";
         emit pumpLog("Error: no active profile");
         return;
     }
 
+    // Pre-delivery safety check
     checkLevels();
 
+    // Get the active profile
     Profile profile = m_profiles[m_activeProfileIndex];
-    qDebug() << "[Pump] Using profile:" << profile.name()
-             << "CarbRatio:" << profile.carbRatio()
-             << "CorrectionFactor:" << profile.correctionFactor();
 
+    // Compute bolus components
     BolusCalculator calc(
         profile.carbRatio(),
         profile.correctionFactor(),
         getInsulinOnBoard()
     );
-
     double foodBolus = calc.foodBolus(static_cast<double>(carbs));
     double corrBolus = calc.correctionBolus(static_cast<double>(currentBG));
     double required  = foodBolus + corrBolus;
     double finalDose = calc.subtractIOB(required);
 
-    qDebug() << "[Pump] foodBolus:" << foodBolus
-             << "corrBolus:" << corrBolus
-             << "required:" << required
-             << "IOB:" << calc.insulinOnBoard()
-             << "finalDose (pre-cap):" << finalDose;
-
-    // Clamp final dose to max per-bolus safe value
-    const double maxSafeDose = 15.0;
-    if (finalDose > maxSafeDose) {
-        qDebug() << "[Pump] Capping bolus to" << maxSafeDose << "units (was" << finalDose << ")";
-        finalDose = maxSafeDose;
-    }
-
-    // Final cap to insulin available
-    if (finalDose > m_insulin) {
-        qDebug() << "[Pump] Not enough insulin. Delivering only" << m_insulin << "units";
+    // Cap to whatever insulin remains
+    if (finalDose > m_insulin)
         finalDose = m_insulin;
-    }
 
-    // If dose is still 0 or less, skip delivery
-    if (finalDose <= 0.0) {
-        qDebug() << "finalDose is 0. Skipping bolusDelivered emit.";
-        return;
-    }
-
+    // Deliver the bolus
     m_insulin = static_cast<int>(std::round(m_insulin - finalDose));
     m_state   = PumpState::DELIVERING_BOLUS;
 
+    // Log event
     logEvent(QString("Bolus delivered: %1 u (food:%2, corr:%3, IOB:%4)")
              .arg(finalDose)
              .arg(foodBolus)
@@ -188,9 +169,7 @@ void Pump::deliverBolus(int currentBG, int carbs)
              .arg(calc.insulinOnBoard()));
     emit pumpLog(QString("Delivered %1 units bolus").arg(finalDose));
 
-    qDebug() << "[Pump] Emitting bolusDelivered:" << finalDose;
-    emit bolusDelivered(finalDose, carbs);
-
+    // Return to idle and re-check levels
     m_state = PumpState::IDLE;
     checkLevels();
 }
