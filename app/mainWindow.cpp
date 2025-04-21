@@ -11,6 +11,8 @@
 #include "PumpInfoPage.h"
 #include "SettingsPage.h"
 #include "ControlIQPage.h"
+#include "WarningDialog.h"
+#include "HistoryLog.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -21,6 +23,7 @@ mainWindow::mainWindow(QWidget *parent)
     , ui(new Ui::mainWindow)
     // 1000 ms real interval, 5 simulated minutes per tick:
     , m_clock(new SimulationClock(1000, 5, this))
+    , m_simTime(QDateTime::currentDateTime())
     , m_pump(new Pump(this))
     , m_profileManager(new ProfileManager(this))
     , pageHome(new HomePage(this))
@@ -85,6 +88,14 @@ mainWindow::mainWindow(QWidget *parent)
     connect(m_profileManager, &ProfileManager::profileChanged,
         this,                &mainWindow::refreshStatusBar,
         Qt::QueuedConnection);
+
+    connect(m_pump, &Pump::warningRaised,
+            this,   &mainWindow::onPumpWarning);
+
+    connect(this, &mainWindow::guiLog,
+            pageHistoryLog, &HistoryLogPage::addEntry);
+
+
 
 }
 
@@ -212,6 +223,7 @@ void mainWindow::onAddProfile()
 {
     pageProfileEditor->clearFields();
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
+    logEvent("added profile");
 }
 
 void mainWindow::onActivateProfile(const QString &name)
@@ -219,6 +231,7 @@ void mainWindow::onActivateProfile(const QString &name)
     if (!m_profileManager->selectProfile(name)) {
         qWarning() << "Failed to activate profile" << name;
     }
+    logEvent("activated profile");
 }
 
 void mainWindow::onEditProfile(const QString &name)
@@ -226,11 +239,13 @@ void mainWindow::onEditProfile(const QString &name)
     Profile p = m_profileManager->getProfileByName(name);
     pageProfileEditor->setProfile(p);
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
+    logEvent("edited profile");
 }
 
 void mainWindow::onDeleteProfile(const QString &name)
 {
     m_profileManager->removeProfile(name);
+    logEvent("deleted profile");
 }
 
 void mainWindow::onEditorAddProfile(const Profile& p)
@@ -282,3 +297,18 @@ void mainWindow::onChargeBattery()
     // immediately refresh the status bar (time/batt/profile):
     updateStatusBar(m_clock->elapsedMinutes());
 }
+
+void mainWindow::onPumpWarning(ErrorHandler::Warning w, const QString &msg)
+{
+    // The dialog deletes itself on close because of Qt::WA_DeleteOnClose
+    auto *dlg = new WarningDialog(w, msg, m_pump, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->show();
+}
+
+void mainWindow::logEvent(const QString &desc)
+{
+    m_history.append( HistoryLog(m_simTime, desc) );   // keep your own copy
+    emit guiLog(desc);                                 // forward to the page
+}
+
