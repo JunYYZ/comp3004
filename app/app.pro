@@ -22,6 +22,7 @@ SOURCES += \
     PumpInfoPage.cpp \
     SettingsPage.cpp \
     StatusPage.cpp \
+    WarningDialog.cpp \
     main.cpp \
     BolusCalculator.cpp \
     ErrorHandler.cpp \
@@ -64,7 +65,8 @@ HEADERS += \
     ControlIQ.h \
     EventLogger.h \
     ChartModel.h \
-    mainWindow.h
+    WarningDialog.h \
+    mainWindow.h \
 
 FORMS += \
     BolusPage.ui \

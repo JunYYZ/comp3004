@@ -35,6 +35,9 @@ public:
     Pump* pump() const { return m_pump; }
     ProfileManager* profileManager() const { return m_profileManager; }
 
+signals:
+    void guiLog(const QString &msg);
+
 private slots:
     // navigation
     void onActionHome();
@@ -64,9 +67,13 @@ private slots:
     void refreshStatusBar();
     void onChargeBattery();
 
+    void onPumpWarning(ErrorHandler::Warning w, const QString& msg);
+    void logEvent(const QString &desc);
+
 private:
     void connectPageSignals();
 
+    QVector<HistoryLog> m_history;    ///< Chronological event history
     Ui::mainWindow   *ui;
 
     // one member per page
@@ -87,6 +94,8 @@ private:
     SettingsPage*     pageSettings;
     ControlIQPage*    pageControlIQ;
     BGSimulator*      m_bgSim;
+    QDateTime m_simTime;
+
 };
 
 #endif // MAINWINDOW_H
