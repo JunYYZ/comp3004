@@ -34,6 +34,8 @@ mainWindow::mainWindow(QWidget *parent)
     , pagePumpInfo(new PumpInfoPage(this))
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
+    , m_bgSim(new BGSimulator(this))
+
 {
     ui->setupUi(this);
 
@@ -46,6 +48,12 @@ mainWindow::mainWindow(QWidget *parent)
     pageBolus->setProfileManager(m_profileManager);
     pageBolus->setPump(m_pump);
     pageProfileList->setProfileManager(m_profileManager);
+
+    // Sync profiles into Pump:
+    for (const Profile& p : m_profileManager->profiles()) {
+        m_pump->addProfile(p);
+    }
+    m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
 
 
     // wire up menu actions (QMenu::aboutToShow)
@@ -77,6 +85,30 @@ mainWindow::mainWindow(QWidget *parent)
             m_pump,   &Pump::onSimulatedTimeAdvanced);
 
     m_clock->start();
+    // Connect BG simulator to profile
+    m_bgSim->setProfile(m_profileManager->activeProfile());
+    m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
+
+    // Update BG simulator if profile changes
+    connect(m_profileManager, &ProfileManager::profileChanged, this, [=]() {
+        m_bgSim->setProfile(m_profileManager->activeProfile());
+        m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
+    });
+
+    // Connect simulation clock to BG updates
+    connect(m_clock, &SimulationClock::tick,
+            m_bgSim, &BGSimulator::onTick);
+
+    // Connect bolus signal to BG simulator
+    connect(m_pump, QOverload<double, int>::of(&Pump::bolusDelivered),
+            m_bgSim, &BGSimulator::onBolusDelivered);
+
+
+    // Emit new glucose reading to graph
+    connect(m_bgSim, &BGSimulator::newReading, this, [=](double bg) {
+        static int timeStep = 0;
+        pageGraph->addBGPoint(timeStep++, bg);
+    });
 
     // show initial “00:00” battery/profile
     updateStatusBar(0);
@@ -85,7 +117,6 @@ mainWindow::mainWindow(QWidget *parent)
     connect(m_profileManager, &ProfileManager::profileChanged,
         this,                &mainWindow::refreshStatusBar,
         Qt::QueuedConnection);
-
 }
 
 mainWindow::~mainWindow()
@@ -218,7 +249,11 @@ void mainWindow::onActivateProfile(const QString &name)
 {
     if (!m_profileManager->selectProfile(name)) {
         qWarning() << "Failed to activate profile" << name;
+        return;
     }
+
+    // Tell the pump to use this profile
+    m_pump->selectActiveProfile(name);
 }
 
 void mainWindow::onEditProfile(const QString &name)
@@ -236,6 +271,12 @@ void mainWindow::onDeleteProfile(const QString &name)
 void mainWindow::onEditorAddProfile(const Profile& p)
 {
     m_profileManager->addProfile(p);
+
+    // Sync into Pump too:
+    m_pump->addProfile(p);
+    m_pump->selectActiveProfile(p.name());
+
+    // Switch back to the list view
     ui->stackedPages->setCurrentWidget(pageProfileList);
 }
 

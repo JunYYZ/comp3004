@@ -81,6 +81,7 @@ signals:
      */
     void pumpLog(const QString& msg);
     void batteryLevelChanged(int newBattery);
+    void bolusDelivered(double units, int carbs);
 
 private:
     /**

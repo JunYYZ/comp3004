@@ -7,6 +7,8 @@
 #include "HistoryLogPage.h"
 #include "ProfileEditorPage.h"
 #include "SimulationClock.h"
+#include "CGM.h"  // ✅ ADD THIS
+#include "BGSimulator.h"
 
 class HomePage;
 class LockPage;
@@ -31,7 +33,7 @@ public:
     explicit mainWindow(QWidget *parent = nullptr);
     ~mainWindow();
     Pump* pump() const { return m_pump; }
-    ProfileManager* profileManager() const { return m_profileManager;}
+    ProfileManager* profileManager() const { return m_profileManager; }
 
 private slots:
     // navigation
@@ -48,7 +50,7 @@ private slots:
     void onActionControlIQ();
     void onActionLock();
 
-    //profile-list actions
+    // profile-list actions
     void onAddProfile();
     void onActivateProfile(const QString &name);
     void onEditProfile(const QString &name);
@@ -69,20 +71,22 @@ private:
 
     // one member per page
     SimulationClock*  m_clock;
-    Pump            *m_pump;
-    HistoryLogPage* m_historypage;
-    ProfileManager  *m_profileManager;
-    HomePage        *pageHome;
-    LockPage        *pageLock;
-    StatusPage      *pageStatus;
-    BolusPage       *pageBolus;
-    GraphPage       *pageGraph;
-    HistoryLogPage  *pageHistoryLog;
-    ProfileListPage *pageProfileList;
-    ProfileEditorPage *pageProfileEditor;
-    PumpInfoPage    *pagePumpInfo;
-    SettingsPage    *pageSettings;
-    ControlIQPage   *pageControlIQ;
+    Pump*             m_pump;
+    CGM*              m_cgm;         // remove
+    HistoryLogPage*   m_historypage;
+    ProfileManager*   m_profileManager;
+    HomePage*         pageHome;
+    LockPage*         pageLock;
+    StatusPage*       pageStatus;
+    BolusPage*        pageBolus;
+    GraphPage*        pageGraph;
+    HistoryLogPage*   pageHistoryLog;
+    ProfileListPage*  pageProfileList;
+    ProfileEditorPage* pageProfileEditor;
+    PumpInfoPage*     pagePumpInfo;
+    SettingsPage*     pageSettings;
+    ControlIQPage*    pageControlIQ;
+    BGSimulator*      m_bgSim;
 };
 
 #endif // MAINWINDOW_H

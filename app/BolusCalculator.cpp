@@ -17,12 +17,12 @@ void BolusCalculator::setInsulinOnBoard(double iob)     { m_insulinOnBoard = iob
 void BolusCalculator::setTargetBG(int tbg)              { m_targetBG = tbg; }
 
 double BolusCalculator::foodBolus(double carbs) const {
-    return carbs * m_carbRatio;
+    return carbs / m_carbRatio;
 }
 
 double BolusCalculator::correctionBolus(int currentBG) const {
     double delta = currentBG - m_targetBG;
-    return delta * m_correctionFactor;
+    return delta / m_correctionFactor;
 }
 
 double BolusCalculator::subtractIOB(double totalBolus) const {

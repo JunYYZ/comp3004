@@ -1,4 +1,3 @@
-// CGM.h
 #ifndef CGM_H
 #define CGM_H
 
@@ -15,16 +14,22 @@ public:
      */
     CGM(int intervalSimMinutes, QObject* parent = nullptr);
 
+    /// Returns the most recent BG value (mmol/L)
+    double latestBG() const;
+
 signals:
-    /** Emitted when a new glucose reading is available */
+    /// Emitted when a new glucose reading is available
     void newReading(double glucose);
 
 public slots:
-    /** Call when simulation clock ticks */
+    /// Call this every time the simulation clock ticks
     void onTick(int simMinute);
+    void onBolusEffect(double units);
 
 private:
-    int m_interval;
+    int m_interval;     // how often to emit in sim minutes
+    double m_lastBG;    // latest glucose value (mmol/L)
     double generateValue();
 };
+
 #endif // CGM_H
