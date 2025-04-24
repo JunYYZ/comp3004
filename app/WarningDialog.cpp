@@ -28,6 +28,14 @@ WarningDialog::WarningDialog(ErrorHandler::Warning w,
         btn = new QPushButton("Fill insulin", this);
         connect(btn, &QPushButton::clicked, pump, &Pump::fillInsulin);
         break;
+    // case ErrorHandler::BGLow:
+    //     btn = new QPushButton("Stop Pump", this);
+    //     connect(btn, &QPushButton::clicked, pump, &Pump::emergencyStop);
+    //     break;
+    // case ErrorHandler::BGHigh:
+    //     btn = new QPushButton("Fill insulin", this);
+    //     connect(btn, &QPushButton::clicked, pump, &Pump::deliverBolus);
+    //     break;
     default:                                      // generic warnings
         btn = new QPushButton("Dismiss", this);
         break;

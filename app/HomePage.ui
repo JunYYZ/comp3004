@@ -70,19 +70,6 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="btnStatus">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Status</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="1">
      <widget class="QPushButton" name="btnBolus">
       <property name="sizePolicy">
@@ -96,46 +83,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="btnSettings">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Settings</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="btnPumpInfo">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Pump Info</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="btnGraph">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>CGM</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
+    <item row="1" column="2">
      <widget class="QPushButton" name="btnHistory">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -148,8 +96,8 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="4">
-     <widget class="QPushButton" name="btnLoadCartridge">
+    <item row="0" column="1">
+     <widget class="QPushButton" name="btnSettings">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -157,12 +105,12 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Load Cartridge</string>
+       <string>Settings</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="4">
-     <widget class="QPushButton" name="btnInsulin">
+    <item row="0" column="2">
+     <widget class="QPushButton" name="btnGraph">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -170,11 +118,50 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Start/Stop Insulin</string>
+       <string>CGM</string>
       </property>
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QLabel" name="lblSerial">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>0</y>
+     <width>211</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Pump Serial#: 12345678910</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblSoft">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>20</y>
+     <width>211</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Software: v3.7.1</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblFirm">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>40</y>
+     <width>211</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Firmware: v3.5.1</string>
+   </property>
   </widget>
  </widget>
  <resources/>
