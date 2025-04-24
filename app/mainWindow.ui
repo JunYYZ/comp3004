@@ -23,6 +23,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedPages">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
       <widget class="LockPage" name="pageLock"/>
       <widget class="HomePage" name="pageHome"/>
       <widget class="QWidget" name="pageStatus">

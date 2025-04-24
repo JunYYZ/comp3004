@@ -11,6 +11,7 @@
 #include "ControlIQPage.h"
 #include "WarningDialog.h"
 #include "HistoryLog.h"
+#include <QMessageBox>
 
 #include <QDebug>
 #include <QTimer>
@@ -41,6 +42,10 @@ mainWindow::mainWindow(QWidget *parent)
 
     // supply the clock to pages that need it:
     pageHistoryLog->setSimulationClock(m_clock);
+
+
+    pageBolus->setPump(m_pump);
+
 
     // menuHome is disabled until unlocked
     ui->menuHome->setEnabled(false);
@@ -121,6 +126,31 @@ mainWindow::mainWindow(QWidget *parent)
 
     connect(this, &mainWindow::guiLog,
             pageHistoryLog, &HistoryLogPage::addEntry);
+
+    pageHome->setPump(m_pump);                          // NEW ①
+
+
+
+                            // NEW ①
+    connect(m_pump, &Pump::iobChanged,
+            pageHome, &HomePage::setIOB);               // NEW ②
+
+
+    // in your mainWindow constructor, right after you connect iobChanged→setIOB:
+    connect(m_pump, &Pump::iobChanged, this, [this](double u){
+        if (u <= 0.0) {
+            QMessageBox::information(
+                this,
+                tr("IOB Depleted"),
+                tr("You have no active insulin on board.")
+            );
+        }
+    });
+
+
+
+
+
 
 }
 
