@@ -6,6 +6,8 @@ GraphPage::GraphPage(QWidget *parent) :
     ui(new Ui::GraphPage)
 {
     ui->setupUi(this);
+    connect(ui->btnBack,  &QPushButton::clicked,
+            this, &GraphPage::on_btnBack_clicked);
 }
 
 GraphPage::~GraphPage()
@@ -17,3 +19,7 @@ void GraphPage::addBGPoint(int timeStep, double bg) {
     ui->graphWidget->addBGPoint(timeStep, bg);
 }
 
+void GraphPage::on_btnBack_clicked()
+{
+    emit backRequested();
+}

@@ -25,14 +25,18 @@
      <widget class="QStackedWidget" name="stackedPages">
       <widget class="LockPage" name="pageLock"/>
       <widget class="HomePage" name="pageHome"/>
-      <widget class="StatusPage" name="pageStatus"/>
+      <widget class="QWidget" name="pageStatus">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
       <widget class="BolusPage" name="pageBolus"/>
       <widget class="ProfileListPage" name="pageProfileList"/>
       <widget class="ProfileEditorPage" name="pageProfileEditor"/>
       <widget class="HistoryLogPage" name="pageHistory"/>
       <widget class="SettingsPage" name="pageSettings"/>
       <widget class="GraphPage" name="pageGraph"/>
-      <widget class="PumpInfoPage" name="pagePumpInfo"/>
+      <widget class="QWidget" name="pagePumpInfo"/>
       <widget class="ControlIQPage" name="pageControlIQ"/>
      </widget>
     </item>
@@ -93,12 +97,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>StatusPage</class>
-   <extends>QWidget</extends>
-   <header>StatusPage.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>BolusPage</class>
    <extends>QWidget</extends>
    <header>BolusPage.h</header>
@@ -132,12 +130,6 @@
    <class>GraphPage</class>
    <extends>QWidget</extends>
    <header>GraphPage.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PumpInfoPage</class>
-   <extends>QWidget</extends>
-   <header>PumpInfoPage.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

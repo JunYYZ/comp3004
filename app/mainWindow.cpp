@@ -3,12 +3,10 @@
 
 #include "HomePage.h"
 #include "LockPage.h"
-#include "StatusPage.h"
 #include "BolusPage.h"
 #include "GraphPage.h"
 #include "HistoryLogPage.h"
 #include "ProfileListPage.h"
-#include "PumpInfoPage.h"
 #include "SettingsPage.h"
 #include "ControlIQPage.h"
 #include "WarningDialog.h"
@@ -28,13 +26,11 @@ mainWindow::mainWindow(QWidget *parent)
     , m_profileManager(new ProfileManager(this))
     , pageHome(new HomePage(this))
     , pageLock(new LockPage(this))
-    , pageStatus(new StatusPage(this))
     , pageBolus(new BolusPage(this))
     , pageGraph(new GraphPage(this))
     , pageHistoryLog(new HistoryLogPage(m_pump, this))
     , pageProfileList(new ProfileListPage(this))
     , pageProfileEditor(new ProfileEditorPage(m_profileManager, this))
-    , pagePumpInfo(new PumpInfoPage(this))
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
     , m_bgSim(new BGSimulator(this))
@@ -68,13 +64,11 @@ mainWindow::mainWindow(QWidget *parent)
     // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
-    ui->stackedPages->addWidget(pageStatus);
     ui->stackedPages->addWidget(pageBolus);
     ui->stackedPages->addWidget(pageGraph);
     ui->stackedPages->addWidget(pageHistoryLog);
     ui->stackedPages->addWidget(pageProfileList);
     ui->stackedPages->addWidget(pageProfileEditor);
-    ui->stackedPages->addWidget(pagePumpInfo);
     ui->stackedPages->addWidget(pageSettings);
     ui->stackedPages->addWidget(pageControlIQ);
 
@@ -139,14 +133,12 @@ mainWindow::~mainWindow()
 void mainWindow::connectPageSignals()
 {
     // --- HomePage navigation buttons ---
-    connect(pageHome, &HomePage::gotoStatus,     this, &mainWindow::onActionStatus);
     connect(pageHome, &HomePage::gotoBolus,      this, &mainWindow::onActionBolus);
     connect(pageHome, &HomePage::gotoGraph,      this, &mainWindow::onActionGraph);
     connect(pageHome, &HomePage::gotoHistory,    this, &mainWindow::onActionHistoryLog);
     connect(pageHome, &HomePage::gotoInsulin,    this, &mainWindow::onActionInsulin);
     connect(pageHome, &HomePage::loadCartridge,  this, &mainWindow::onLoadCartridge);
     connect(pageHome, &HomePage::gotoProfiles,   this, &mainWindow::onActionProfileList);
-    connect(pageHome, &HomePage::gotoPumpInfo,   this, &mainWindow::onActionPumpInfo);
     connect(pageHome, &HomePage::gotoSettings,   this, &mainWindow::onActionSettings);
     connect(pageHome, &HomePage::gotoControlIQ,  this, &mainWindow::onActionControlIQ);
 
@@ -183,14 +175,10 @@ void mainWindow::connectPageSignals()
     connect(pageSettings, &SettingsPage::backRequested,
             this,               &mainWindow::onActionHome);
 
-    // --- StatusPage back ---
-    connect(pageStatus, &StatusPage::backRequested,
-            this,               &mainWindow::onActionHome);
-
     connect(pageBolus, &BolusPage::backClicked,
             this,               &mainWindow::onActionHome);
 
-    connect(pagePumpInfo, &PumpInfoPage::backClicked,
+    connect(pageGraph, &GraphPage::backRequested,
             this,               &mainWindow::onActionHome);
 }
 
@@ -214,8 +202,6 @@ void mainWindow::onActionLock()
     ui->stackedPages->setCurrentWidget(pageLock);
 }
 
-void mainWindow::onActionStatus()
-{ ui->stackedPages->setCurrentWidget(pageStatus); }
 
 void mainWindow::onActionBolus()
 { ui->stackedPages->setCurrentWidget(pageBolus); }
@@ -237,9 +223,6 @@ void mainWindow::onLoadCartridge()
 
 void mainWindow::onActionProfileList()
 { ui->stackedPages->setCurrentWidget(pageProfileList); }
-
-void mainWindow::onActionPumpInfo()
-{ ui->stackedPages->setCurrentWidget(pagePumpInfo); }
 
 void mainWindow::onActionSettings()
 { ui->stackedPages->setCurrentWidget(pageSettings); }

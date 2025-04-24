@@ -17,7 +17,6 @@ class BolusPage;
 class GraphPage;
 class HistoryLogPage;
 class ProfileListPage;
-class PumpInfoPage;
 class SettingsPage;
 class ControlIQPage;
 
@@ -41,14 +40,12 @@ signals:
 private slots:
     // navigation
     void onActionHome();
-    void onActionStatus();
     void onActionBolus();
     void onActionGraph();
     void onActionHistoryLog();
     void onActionInsulin();       // if you have a separate “insulin” page
     void onLoadCartridge();       // home→load‑cartridge shortcut
     void onActionProfileList();
-    void onActionPumpInfo();
     void onActionSettings();
     void onActionControlIQ();
     void onActionLock();
@@ -85,13 +82,11 @@ private:
     ProfileManager*   m_profileManager;
     HomePage*         pageHome;
     LockPage*         pageLock;
-    StatusPage*       pageStatus;
     BolusPage*        pageBolus;
     GraphPage*        pageGraph;
     HistoryLogPage*   pageHistoryLog;
     ProfileListPage*  pageProfileList;
     ProfileEditorPage* pageProfileEditor;
-    PumpInfoPage*     pagePumpInfo;
     SettingsPage*     pageSettings;
     ControlIQPage*    pageControlIQ;
     BGSimulator*      m_bgSim;
