@@ -86,6 +86,8 @@ signals:
     void bolusDelivered(double units, int carbs);
     void warningRaised (ErrorHandler::Warning w, QString msg);
     void warningCleared(ErrorHandler::Warning w);
+    void insulinLevelChanged(int newLevel);
+    void basalRateChanged(double newRate);
 
 private:
     /**
@@ -107,6 +109,8 @@ private:
     ErrorHandler* m_errorHandler;     ///< Raises and clears warnings
     SimulationClock* m_clock = nullptr;
     QDateTime m_simTime;
+    double m_insulinOnBoard = 0.0;
+    double m_insulinActionDuration = 4.0 * 60; // minutes of activity, e.g. 4h
 
 };
 

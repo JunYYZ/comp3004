@@ -11,10 +11,12 @@
 #include "ControlIQPage.h"
 #include "WarningDialog.h"
 #include "HistoryLog.h"
+#include "ControlIQ.h"
 
 #include <QDebug>
 #include <QTimer>
 #include <QTime>      // for converting minutes→hh:mm:ss
+#include <QtGlobal>
 
 mainWindow::mainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -36,6 +38,7 @@ mainWindow::mainWindow(QWidget *parent)
     , m_bgSim(new BGSimulator(this))
 
 {
+    m_ctrlIQ = new ControlIQ(m_pump, this);
     m_profileManager->loadProfilesFromFile();
     ui->setupUi(this);
 
@@ -61,6 +64,12 @@ mainWindow::mainWindow(QWidget *parent)
     connect(ui->menuLock, &QMenu::aboutToShow, this, &mainWindow::onActionLock);
     connect(ui->menuCharge_Battery, &QMenu::aboutToShow,
                 this,               &mainWindow::onChargeBattery);
+
+    // pump status bar updates
+    connect(m_pump, &Pump::insulinLevelChanged,
+            this,   &mainWindow::refreshStatusBar);
+
+
     // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
@@ -86,12 +95,18 @@ mainWindow::mainWindow(QWidget *parent)
     // Connect BG simulator to profile
     m_bgSim->setProfile(m_profileManager->activeProfile());
     m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
-
+    pageControlIQ->setStatus( m_ctrlIQ->isEnabled() ? "Active" : "Off" );
+    pageControlIQ->setCurrentBasal(
+        m_profileManager->activeProfile().basalRate()
+    );
     // Update BG simulator if profile changes
     connect(m_profileManager, &ProfileManager::profileChanged, this, [=]() {
         m_bgSim->setProfile(m_profileManager->activeProfile());
         m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
     });
+    // ── wire BGSimulator → Control-IQ ──
+    connect(m_bgSim, &BGSimulator::newReading,
+            m_ctrlIQ, &ControlIQ::onNewReading);
 
     // Connect simulation clock to BG updates
     connect(m_clock, &SimulationClock::tick,
@@ -101,6 +116,9 @@ mainWindow::mainWindow(QWidget *parent)
     connect(m_pump, QOverload<double, int>::of(&Pump::bolusDelivered),
             m_bgSim, &BGSimulator::onBolusDelivered);
 
+    // wire pump basal-rate signals to the UI
+    connect(m_pump, &Pump::basalRateChanged,
+            pageControlIQ, &ControlIQPage::setCurrentBasal);
 
     // Emit new glucose reading to graph
     connect(m_bgSim, &BGSimulator::newReading, this, [=](double bg) {
@@ -122,6 +140,49 @@ mainWindow::mainWindow(QWidget *parent)
     connect(this, &mainWindow::guiLog,
             pageHistoryLog, &HistoryLogPage::addEntry);
 
+    //Control IQ logic
+
+    // wire the on and off buttons
+    connect(pageControlIQ, &ControlIQPage::controlIQTurnedOn, this, [this]() {
+        m_ctrlIQ->setEnabled(true);  // Turn ControlIQ on
+        pageControlIQ->setStatus("Active");
+    });
+
+    connect(pageControlIQ, &ControlIQPage::controlIQTurnedOff, this, [this]() {
+        m_ctrlIQ->setEnabled(false);  // Turn ControlIQ off
+        pageControlIQ->setStatus("Inactive");
+    });
+
+    connect(m_ctrlIQ, &ControlIQ::enabledChanged, this, [=](bool on){
+        pageControlIQ->setStatus(on ? "Active" : "Off");
+    });
+
+    // –– update the predicted BG label
+    connect(m_ctrlIQ, &ControlIQ::predictionMade,
+            this, [=](double pred){
+        if (qIsNaN(pred))
+            pageControlIQ->setPredictedBG(0.0);  // or blank
+        else
+            pageControlIQ->setPredictedBG(pred);
+    });
+    // –– if Control-IQ stops you for low BG, show that
+    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG,
+            this,      [&](){
+        pageControlIQ->setNextAdjustment("Suspended (low BG)");
+    });
+
+    // –– keep the “Current Basal” in sync with whatever your pump is doing
+    connect(m_pump, &Pump::basalRateChanged,  // you’ll need to emit this in Pump::onSimulatedTimeAdvanced
+            this,    [&](double rate){
+        pageControlIQ->setCurrentBasal(rate);
+    });
+    // wire predictions back into the UI
+    connect(m_ctrlIQ, &ControlIQ::predictionMade,
+            pageControlIQ, &ControlIQPage::setPredictedBG);
+    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG,
+            pageControlIQ, [&](){
+        pageControlIQ->setNextAdjustment("Suspended (low BG)");
+    });
 }
 
 mainWindow::~mainWindow()
@@ -301,14 +362,18 @@ void mainWindow::updateStatusBar(int simMinutes)
     t = t.addSecs(simMinutes * 60);
 
     int battery = m_pump->batteryLevel();
+    double basal = m_profileManager->activeProfile().basalRate();
+    double insulin = m_pump->insulinLevel();
     QString prof = m_profileManager->activeProfile().name();
     if (prof.isEmpty()) prof = QLatin1String("<none>");
 
     ui->statusbar->showMessage(
-        QString("Time: %1    Battery: %2%    Profile: %3")
+        QString("Time %1   Profile %2   Basal %3 U/h   Insulin %4 U   Battery %5%")
         .arg(t.toString("hh:mm:ss"))
-        .arg(battery)
         .arg(prof)
+        .arg(basal)
+        .arg(insulin)
+        .arg(battery)
     );
 }
 
