@@ -3,14 +3,14 @@
 
 #include "HomePage.h"
 #include "LockPage.h"
-#include "StatusPage.h"
 #include "BolusPage.h"
 #include "GraphPage.h"
 #include "HistoryLogPage.h"
 #include "ProfileListPage.h"
-#include "PumpInfoPage.h"
 #include "SettingsPage.h"
 #include "ControlIQPage.h"
+#include "WarningDialog.h"
+#include "HistoryLog.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -21,20 +21,22 @@ mainWindow::mainWindow(QWidget *parent)
     , ui(new Ui::mainWindow)
     // 1000 ms real interval, 5 simulated minutes per tick:
     , m_clock(new SimulationClock(1000, 5, this))
+    , m_simTime(QDateTime::currentDateTime())
     , m_pump(new Pump(this))
     , m_profileManager(new ProfileManager(this))
     , pageHome(new HomePage(this))
     , pageLock(new LockPage(this))
-    , pageStatus(new StatusPage(this))
     , pageBolus(new BolusPage(this))
     , pageGraph(new GraphPage(this))
     , pageHistoryLog(new HistoryLogPage(m_pump, this))
     , pageProfileList(new ProfileListPage(this))
     , pageProfileEditor(new ProfileEditorPage(m_profileManager, this))
-    , pagePumpInfo(new PumpInfoPage(this))
     , pageSettings(new SettingsPage(this))
     , pageControlIQ(new ControlIQPage(this))
+    , m_bgSim(new BGSimulator(this))
+
 {
+    m_profileManager->loadProfilesFromFile();
     ui->setupUi(this);
 
     // supply the clock to pages that need it:
@@ -47,6 +49,12 @@ mainWindow::mainWindow(QWidget *parent)
     pageBolus->setPump(m_pump);
     pageProfileList->setProfileManager(m_profileManager);
 
+    // Sync profiles into Pump:
+    for (const Profile& p : m_profileManager->profiles()) {
+        m_pump->addProfile(p);
+    }
+    m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
+
 
     // wire up menu actions (QMenu::aboutToShow)
     connect(ui->menuHome, &QMenu::aboutToShow, this, &mainWindow::onActionHome);
@@ -56,13 +64,11 @@ mainWindow::mainWindow(QWidget *parent)
     // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
-    ui->stackedPages->addWidget(pageStatus);
     ui->stackedPages->addWidget(pageBolus);
     ui->stackedPages->addWidget(pageGraph);
     ui->stackedPages->addWidget(pageHistoryLog);
     ui->stackedPages->addWidget(pageProfileList);
     ui->stackedPages->addWidget(pageProfileEditor);
-    ui->stackedPages->addWidget(pagePumpInfo);
     ui->stackedPages->addWidget(pageSettings);
     ui->stackedPages->addWidget(pageControlIQ);
 
@@ -77,6 +83,30 @@ mainWindow::mainWindow(QWidget *parent)
             m_pump,   &Pump::onSimulatedTimeAdvanced);
 
     m_clock->start();
+    // Connect BG simulator to profile
+    m_bgSim->setProfile(m_profileManager->activeProfile());
+    m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
+
+    // Update BG simulator if profile changes
+    connect(m_profileManager, &ProfileManager::profileChanged, this, [=]() {
+        m_bgSim->setProfile(m_profileManager->activeProfile());
+        m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
+    });
+
+    // Connect simulation clock to BG updates
+    connect(m_clock, &SimulationClock::tick,
+            m_bgSim, &BGSimulator::onTick);
+
+    // Connect bolus signal to BG simulator
+    connect(m_pump, QOverload<double, int>::of(&Pump::bolusDelivered),
+            m_bgSim, &BGSimulator::onBolusDelivered);
+
+
+    // Emit new glucose reading to graph
+    connect(m_bgSim, &BGSimulator::newReading, this, [=](double bg) {
+        static int timeStep = 0;
+        pageGraph->addBGPoint(timeStep++, bg);
+    });
 
     // show initial “00:00” battery/profile
     updateStatusBar(0);
@@ -86,24 +116,29 @@ mainWindow::mainWindow(QWidget *parent)
         this,                &mainWindow::refreshStatusBar,
         Qt::QueuedConnection);
 
+    connect(m_pump, &Pump::warningRaised,
+            this,   &mainWindow::onPumpWarning);
+
+    connect(this, &mainWindow::guiLog,
+            pageHistoryLog, &HistoryLogPage::addEntry);
+
 }
 
 mainWindow::~mainWindow()
 {
+    m_profileManager->saveProfilesToFile();
     delete ui;
 }
 
 void mainWindow::connectPageSignals()
 {
     // --- HomePage navigation buttons ---
-    connect(pageHome, &HomePage::gotoStatus,     this, &mainWindow::onActionStatus);
     connect(pageHome, &HomePage::gotoBolus,      this, &mainWindow::onActionBolus);
     connect(pageHome, &HomePage::gotoGraph,      this, &mainWindow::onActionGraph);
     connect(pageHome, &HomePage::gotoHistory,    this, &mainWindow::onActionHistoryLog);
     connect(pageHome, &HomePage::gotoInsulin,    this, &mainWindow::onActionInsulin);
     connect(pageHome, &HomePage::loadCartridge,  this, &mainWindow::onLoadCartridge);
     connect(pageHome, &HomePage::gotoProfiles,   this, &mainWindow::onActionProfileList);
-    connect(pageHome, &HomePage::gotoPumpInfo,   this, &mainWindow::onActionPumpInfo);
     connect(pageHome, &HomePage::gotoSettings,   this, &mainWindow::onActionSettings);
     connect(pageHome, &HomePage::gotoControlIQ,  this, &mainWindow::onActionControlIQ);
 
@@ -140,14 +175,10 @@ void mainWindow::connectPageSignals()
     connect(pageSettings, &SettingsPage::backRequested,
             this,               &mainWindow::onActionHome);
 
-    // --- StatusPage back ---
-    connect(pageStatus, &StatusPage::backRequested,
-            this,               &mainWindow::onActionHome);
-
     connect(pageBolus, &BolusPage::backClicked,
             this,               &mainWindow::onActionHome);
 
-    connect(pagePumpInfo, &PumpInfoPage::backClicked,
+    connect(pageGraph, &GraphPage::backRequested,
             this,               &mainWindow::onActionHome);
 }
 
@@ -171,8 +202,6 @@ void mainWindow::onActionLock()
     ui->stackedPages->setCurrentWidget(pageLock);
 }
 
-void mainWindow::onActionStatus()
-{ ui->stackedPages->setCurrentWidget(pageStatus); }
 
 void mainWindow::onActionBolus()
 { ui->stackedPages->setCurrentWidget(pageBolus); }
@@ -195,9 +224,6 @@ void mainWindow::onLoadCartridge()
 void mainWindow::onActionProfileList()
 { ui->stackedPages->setCurrentWidget(pageProfileList); }
 
-void mainWindow::onActionPumpInfo()
-{ ui->stackedPages->setCurrentWidget(pagePumpInfo); }
-
 void mainWindow::onActionSettings()
 { ui->stackedPages->setCurrentWidget(pageSettings); }
 
@@ -212,13 +238,19 @@ void mainWindow::onAddProfile()
 {
     pageProfileEditor->clearFields();
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
+    logEvent("added profile");
 }
 
 void mainWindow::onActivateProfile(const QString &name)
 {
     if (!m_profileManager->selectProfile(name)) {
         qWarning() << "Failed to activate profile" << name;
+        return;
     }
+    m_pump->selectActiveProfile(name);
+
+    logEvent("activated profile");
+
 }
 
 void mainWindow::onEditProfile(const QString &name)
@@ -226,16 +258,24 @@ void mainWindow::onEditProfile(const QString &name)
     Profile p = m_profileManager->getProfileByName(name);
     pageProfileEditor->setProfile(p);
     ui->stackedPages->setCurrentWidget(pageProfileEditor);
+    logEvent("edited profile");
 }
 
 void mainWindow::onDeleteProfile(const QString &name)
 {
     m_profileManager->removeProfile(name);
+    logEvent("deleted profile");
 }
 
 void mainWindow::onEditorAddProfile(const Profile& p)
 {
     m_profileManager->addProfile(p);
+
+    // Sync into Pump too:
+    m_pump->addProfile(p);
+    m_pump->selectActiveProfile(p.name());
+
+    // Switch back to the list view
     ui->stackedPages->setCurrentWidget(pageProfileList);
 }
 
@@ -282,3 +322,18 @@ void mainWindow::onChargeBattery()
     // immediately refresh the status bar (time/batt/profile):
     updateStatusBar(m_clock->elapsedMinutes());
 }
+
+void mainWindow::onPumpWarning(ErrorHandler::Warning w, const QString &msg)
+{
+    // The dialog deletes itself on close because of Qt::WA_DeleteOnClose
+    auto *dlg = new WarningDialog(w, msg, m_pump, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->show();
+}
+
+void mainWindow::logEvent(const QString &desc)
+{
+    m_history.append( HistoryLog(m_simTime, desc) );   // keep your own copy
+    emit guiLog(desc);                                 // forward to the page
+}
+

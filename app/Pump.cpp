@@ -1,6 +1,7 @@
 #include "Pump.h"
 #include "SimulationClock.h"
 #include <cmath>
+#include <QDebug>
 
 Pump::Pump(QObject *parent)
     : QObject(parent),
@@ -24,6 +25,11 @@ Pump::Pump(QObject *parent)
                 emit pumpLog(QString("WARNING CLEARED [%1]")
                              .arg(int(w)));
             });
+
+    connect(m_errorHandler, &ErrorHandler::warningRaised,
+            this, &Pump::warningRaised);
+    connect(m_errorHandler, &ErrorHandler::warningCleared,
+            this, &Pump::warningCleared);
 
     logEvent("Pump initialized");
     checkLevels();  // catch any startup warnings
@@ -68,6 +74,7 @@ void Pump::addProfile(const Profile &p)
     if (m_activeProfileIndex < 0)
         m_activeProfileIndex = 0;
     logEvent(QString("Profile added: %1").arg(p.name()));
+
 }
 
 bool Pump::selectActiveProfile(const QString &name)
@@ -120,37 +127,60 @@ void Pump::resumeInsulin()
 
 void Pump::deliverBolus(int currentBG, int carbs)
 {
+    qDebug() << "[Pump] deliverBolus called with BG:" << currentBG << "Carbs:" << carbs;
+  
     if (m_activeProfileIndex < 0) {
+        qDebug() << "[Pump] No active profile set!";
         emit pumpLog("Error: no active profile");
         return;
     }
 
-    // Pre-delivery safety check
     checkLevels();
 
-    // Get the active profile
     Profile profile = m_profiles[m_activeProfileIndex];
+    qDebug() << "[Pump] Using profile:" << profile.name()
+             << "CarbRatio:" << profile.carbRatio()
+             << "CorrectionFactor:" << profile.correctionFactor();
 
-    // Compute bolus components
     BolusCalculator calc(
         profile.carbRatio(),
         profile.correctionFactor(),
         getInsulinOnBoard()
     );
+
     double foodBolus = calc.foodBolus(static_cast<double>(carbs));
     double corrBolus = calc.correctionBolus(static_cast<double>(currentBG));
     double required  = foodBolus + corrBolus;
     double finalDose = calc.subtractIOB(required);
 
-    // Cap to whatever insulin remains
-    if (finalDose > m_insulin)
-        finalDose = m_insulin;
+    qDebug() << "[Pump] foodBolus:" << foodBolus
+             << "corrBolus:" << corrBolus
+             << "required:" << required
+             << "IOB:" << calc.insulinOnBoard()
+             << "finalDose (pre-cap):" << finalDose;
 
-    // Deliver the bolus
+    // Clamp final dose to max per-bolus safe value
+    const double maxSafeDose = 15.0;
+    if (finalDose > maxSafeDose) {
+        qDebug() << "[Pump] Capping bolus to" << maxSafeDose << "units (was" << finalDose << ")";
+        finalDose = maxSafeDose;
+    }
+
+    // Final cap to insulin available
+    if (finalDose > m_insulin) {
+        qDebug() << "[Pump] Not enough insulin. Delivering only" << m_insulin << "units";
+        finalDose = m_insulin;
+    }
+
+    // If dose is still 0 or less, skip delivery
+    if (finalDose <= 0.0) {
+        qDebug() << "finalDose is 0. Skipping bolusDelivered emit.";
+        return;
+    }
+
     m_insulin = static_cast<int>(std::round(m_insulin - finalDose));
     m_state   = PumpState::DELIVERING_BOLUS;
 
-    // Log event
     logEvent(QString("Bolus delivered: %1 u (food:%2, corr:%3, IOB:%4)")
              .arg(finalDose)
              .arg(foodBolus)
@@ -158,7 +188,9 @@ void Pump::deliverBolus(int currentBG, int carbs)
              .arg(calc.insulinOnBoard()));
     emit pumpLog(QString("Delivered %1 units bolus").arg(finalDose));
 
-    // Return to idle and re-check levels
+    qDebug() << "[Pump] Emitting bolusDelivered:" << finalDose;
+    emit bolusDelivered(finalDose, carbs);
+
     m_state = PumpState::IDLE;
     checkLevels();
 }
@@ -174,7 +206,7 @@ void Pump::onSimulatedTimeAdvanced(int minutes)
 {
     // 1) Advance your own clock if you have one
     m_simTime = m_simTime.addSecs(minutes * 60);
-    logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
+//    logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
 
     // 2) Update your total simulated‐time counter
     m_totalSimulatedMinutes += minutes;
@@ -188,9 +220,12 @@ void Pump::onSimulatedTimeAdvanced(int minutes)
     // 4) If it really changed, store it, log it, and emit:
     if (newBattery != m_battery) {
         m_battery = newBattery;
-        logEvent(QString("Battery level: %1%").arg(m_battery));
+//        logEvent(QString("Battery level: %1%").arg(m_battery));
         emit batteryLevelChanged(m_battery);
     }
+
+    checkLevels();
+
 }
 
 void Pump::logEvent(const QString &desc)
@@ -224,6 +259,13 @@ void Pump::chargeBattery()
       emit batteryLevelChanged(m_battery);
       // **reset the drain baseline:**
       m_totalSimulatedMinutes = 0;
+      m_errorHandler->clear(ErrorHandler::LowBattery);
     }
 }
 
+void Pump::fillInsulin(){
+    m_insulin = 300;
+    logEvent("Cartridge refilled to 300 u");
+    emit pumpLog("Insulin refilled");
+    m_errorHandler->clear(ErrorHandler::LowInsulin);
+}
