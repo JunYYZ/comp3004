@@ -192,7 +192,7 @@ void Pump::checkLevels()
 void Pump::chargeBattery()
 {
     int old = m_battery;
-    m_battery = std::min(m_battery + 25, 100);
+    m_battery = 100;
     if (m_battery != old) {
         logEvent(QString("Battery charged to %1 %").arg(m_battery));
         emit batteryLevelChanged(m_battery);
