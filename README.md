@@ -14,14 +14,14 @@ All:\
 Use cases
 
 
-Nimish Bhatia:\
+**Nimish Bhatia:**\
 Graph\
 CGM\
 UML State Machine for Insulin Delivery Subsystem\
 UML State Machine for Pump Controller
 
 
-Michael Palummieri:\
+**Michael Palummieri:**\
 Control IQ\
 Bolus Calaculator\
 Manual Bolus\
@@ -30,20 +30,20 @@ main\
 GUI
 
 
-Sajitha Polwatta:\
+**Sajitha Polwatta:**\
 Profile\
 profile crud/manager\
 Video\
 Normal Sequence Diagram
 
 
-Nischal Shrestha:\
+**Nischal Shrestha:**\
 insulin delivery manager\
 extended manual bolus\
 Safety Sequence Diagram
 
 
-Junheng Zhang:\
+**Junheng Zhang:**\
 Warnings\
 Logs\
 Error handling\
