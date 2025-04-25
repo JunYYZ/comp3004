@@ -33,6 +33,11 @@ public:
 
     Profile getProfileByName(const QString &name) const;
 
+    void saveProfilesToFile(const QString& filename = "profiles.txt") const;
+    void loadProfilesFromFile(const QString& filename = "profiles.txt");
+
+
+
 signals:
     void profileChanged(); //for gui refresh dropdown or profile summary view
 

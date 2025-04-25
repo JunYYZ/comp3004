@@ -8,10 +8,15 @@ ProfileEditorPage::ProfileEditorPage(ProfileManager* manager, QWidget *parent)
   : QWidget(parent)
   , ui(new Ui::ProfileEditorPage)
   , m_profileManager(manager)
-  , m_current("", 1.0, 1.0, 0)
+  // NOTE: added a fifth argument (basalRate) with default 0.0
+  , m_current("", 1.0, 1.0, 0, 0.0)
   , m_mode(Mode::New)
 {
     ui->setupUi(this);
+
+    // make sure your .ui has a QDoubleSpinBox named sbBasalRate
+    // and that its range/step make sense (e.g. 0–15 u/hr)
+
     connect(ui->btnSave,   &QPushButton::clicked, this, &ProfileEditorPage::onBtnSaveClicked);
     connect(ui->btnCancel, &QPushButton::clicked, this, &ProfileEditorPage::onBtnCancelClicked);
     updateUiForMode();
@@ -19,15 +24,16 @@ ProfileEditorPage::ProfileEditorPage(ProfileManager* manager, QWidget *parent)
 
 void ProfileEditorPage::clearFields()
 {
-    // reset our working Profile
-    m_current = Profile("", 1.0, 1.0, 0);
+    // reset our working Profile (now including basal)
+    m_current = Profile("", 1.0, 1.0, 0, 0.0);
     m_originalName.clear();
 
     // clear UI widgets
-    ui->leName->clear();
-    ui->sbCarbRatio->setValue(1.0);
-    ui->sbCorrection->setValue(1.0);
-    ui->sbTargetBG->setValue(0);
+    ui->leName       ->clear();
+    ui->sbCarbRatio  ->setValue(1.0);
+    ui->sbCorrection ->setValue(1.0);
+    ui->sbTargetBG   ->setValue(0);
+    ui->sbBasalRate  ->setValue(0.0);          // reset basal spin-box
 
     // back to “Add” mode
     setMode(Mode::New);
@@ -37,7 +43,7 @@ ProfileEditorPage::ProfileEditorPage(QWidget *parent)
   : QWidget(parent)
   , ui(new Ui::ProfileEditorPage)
   , m_profileManager(nullptr)
-  , m_current("", 1.0, 1.0, 0)
+  , m_current("", 1.0, 1.0, 0, 0.0)
   , m_mode(Mode::New)
 {
     ui->setupUi(this);
@@ -69,9 +75,9 @@ ProfileEditorPage::Mode ProfileEditorPage::mode() const
 
 void ProfileEditorPage::setProfile(const Profile &p)
 {
-    m_current = p;
+    m_current      = p;
     m_originalName = p.name();
-    // preload UI fields
+    // preload UI fields, now including basal
     loadProfileIntoUi();
     // switch into edit mode
     setMode(Mode::Edit);
@@ -79,18 +85,20 @@ void ProfileEditorPage::setProfile(const Profile &p)
 
 void ProfileEditorPage::loadProfileIntoUi()
 {
-    ui->leName      ->setText(m_current.name());
-    ui->sbCarbRatio ->setValue(m_current.carbRatio());
-    ui->sbCorrection->setValue(m_current.correctionFactor());
-    ui->sbTargetBG  ->setValue(m_current.targetBG());
+    ui->leName       ->setText(      m_current.name());
+    ui->sbCarbRatio  ->setValue(     m_current.carbRatio());
+    ui->sbCorrection ->setValue(     m_current.correctionFactor());
+    ui->sbTargetBG   ->setValue(     m_current.targetBG());
+    ui->sbBasalRate  ->setValue(     m_current.basalRate());    // ← new
 }
 
 void ProfileEditorPage::collectUiIntoProfile()
 {
-    m_current.setName(           ui->leName      ->text());
-    m_current.setCarbRatio(      ui->sbCarbRatio ->value());
-    m_current.setCorrectionFactor(ui->sbCorrection->value());
-    m_current.setTargetBG(       ui->sbTargetBG  ->value());
+    m_current.setName(            ui->leName       ->text());
+    m_current.setCarbRatio(       ui->sbCarbRatio  ->value());
+    m_current.setCorrectionFactor(ui->sbCorrection ->value());
+    m_current.setTargetBG(        ui->sbTargetBG   ->value());
+    m_current.setBasalRate(       ui->sbBasalRate  ->value()); // ← new
 }
 
 void ProfileEditorPage::updateUiForMode()

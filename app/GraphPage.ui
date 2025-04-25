@@ -13,59 +13,65 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
+  <widget class="QPushButton" name="btnBack">
    <property name="geometry">
     <rect>
-     <x>119</x>
-     <y>9</y>
-     <width>581</width>
-     <height>311</height>
+     <x>10</x>
+     <y>10</y>
+     <width>71</width>
+     <height>25</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
-    <item>
-     <widget class="QComboBox" name="comboRange">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <item>
-       <property name="text">
-        <string>1 hr</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>3 hr</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>6 hr</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item>
-     <widget class="GraphWidget" name="graphWidget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="btnBack">
-      <property name="text">
-       <string>Back</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="text">
+    <string>Back</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboRange">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>10</y>
+     <width>81</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <item>
+    <property name="text">
+     <string>1 hr</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>3 hr</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>6 hr</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="GraphWidget" name="graphWidget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>0</y>
+     <width>551</width>
+     <height>331</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
   </widget>
  </widget>
  <customwidgets>
