@@ -163,32 +163,6 @@
     <string>Firmware: v3.5.1</string>
    </property>
   </widget>
-  <widget class="QLabel" name="lblIOB">
-   <property name="geometry">
-    <rect>
-     <x>620</x>
-     <y>300</y>
-     <width>141</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0 U</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>590</x>
-     <y>300</y>
-     <width>31</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>IOB:</string>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>

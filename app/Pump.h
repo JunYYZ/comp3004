@@ -41,6 +41,8 @@ public:
     void emergencyStop(const QString &reason);
     void deliverExtendedBolus(double totalUnits, int pctNow, int durationMin);
     double getInsulinOnBoard() const;
+    void maybeEmitIOB();
+    void logEvent(const QString &desc);
 
     static constexpr int kLowBatteryThreshold = 20;
     static constexpr int kLowInsulinThreshold = 30;

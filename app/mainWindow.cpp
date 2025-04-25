@@ -147,65 +147,59 @@ mainWindow::mainWindow(QWidget *parent)
     connect(this, &mainWindow::guiLog,
             pageHistoryLog, &HistoryLogPage::addEntry);
 
-// HomePage updates and IOB tracking from dev-nischal
-pageHome->setPump(m_pump);  // Set the pump on HomePage for IOB tracking
+    // Show a message when insulin on board (IOB) is depleted
+    connect(m_pump, &Pump::iobChanged, this, [this](double u){
+        if (u <= 0.0) {
+            QMessageBox::information(
+                this,
+                tr("IOB Depleted"),
+                tr("You have no active insulin on board.")
+            );
+        }
+    });
 
-// Connect IOB updates to the HomePage for displaying IOB
-connect(m_pump, &Pump::iobChanged, pageHome, &HomePage::setIOB); 
+    // Control IQ logic from dev-michael
 
-// Show a message when insulin on board (IOB) is depleted
-connect(m_pump, &Pump::iobChanged, this, [this](double u){
-    if (u <= 0.0) {
-        QMessageBox::information(
-            this,
-            tr("IOB Depleted"),
-            tr("You have no active insulin on board.")
-        );
-    }
-});
+    // Wire the "Turn On" button for Control-IQ
+    connect(pageControlIQ, &ControlIQPage::controlIQTurnedOn, this, [this]() {
+        m_ctrlIQ->setEnabled(true);  // Turn ControlIQ on
+        pageControlIQ->setStatus("Active");
+    });
 
-// Control IQ logic from dev-michael
+    // Wire the "Turn Off" button for Control-IQ
+    connect(pageControlIQ, &ControlIQPage::controlIQTurnedOff, this, [this]() {
+        m_ctrlIQ->setEnabled(false);  // Turn ControlIQ off
+        pageControlIQ->setStatus("Inactive");
+    });
 
-// Wire the "Turn On" button for Control-IQ
-connect(pageControlIQ, &ControlIQPage::controlIQTurnedOn, this, [this]() {
-    m_ctrlIQ->setEnabled(true);  // Turn ControlIQ on
-    pageControlIQ->setStatus("Active");
-});
+    // Update ControlIQ status based on its enabled state
+    connect(m_ctrlIQ, &ControlIQ::enabledChanged, this, [=](bool on){
+        pageControlIQ->setStatus(on ? "Active" : "Off");
+    });
 
-// Wire the "Turn Off" button for Control-IQ
-connect(pageControlIQ, &ControlIQPage::controlIQTurnedOff, this, [this]() {
-    m_ctrlIQ->setEnabled(false);  // Turn ControlIQ off
-    pageControlIQ->setStatus("Inactive");
-});
+    // Update the predicted BG value in ControlIQPage
+    connect(m_ctrlIQ, &ControlIQ::predictionMade, this, [=](double pred){
+        if (qIsNaN(pred))
+            pageControlIQ->setPredictedBG(0.0);  // Show 0.0 for NaN predictions
+        else
+            pageControlIQ->setPredictedBG(pred);  // Show the predicted BG
+    });
 
-// Update ControlIQ status based on its enabled state
-connect(m_ctrlIQ, &ControlIQ::enabledChanged, this, [=](bool on){
-    pageControlIQ->setStatus(on ? "Active" : "Off");
-});
+    // Handle low BG warning and stop Control-IQ if needed
+    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, this, [&]() {
+        pageControlIQ->setNextAdjustment("Suspended (low BG)");  // Show suspension message
+    });
 
-// Update the predicted BG value in ControlIQPage
-connect(m_ctrlIQ, &ControlIQ::predictionMade, this, [=](double pred){
-    if (qIsNaN(pred))
-        pageControlIQ->setPredictedBG(0.0);  // Show 0.0 for NaN predictions
-    else
-        pageControlIQ->setPredictedBG(pred);  // Show the predicted BG
-});
+    // Keep the "Current Basal" in sync with the pump's basal rate
+    connect(m_pump, &Pump::basalRateChanged, this, [&](double rate) {
+        pageControlIQ->setCurrentBasal(rate);  // Update current basal rate in UI
+    });
 
-// Handle low BG warning and stop Control-IQ if needed
-connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, this, [&]() {
-    pageControlIQ->setNextAdjustment("Suspended (low BG)");  // Show suspension message
-});
-
-// Keep the "Current Basal" in sync with the pump's basal rate
-connect(m_pump, &Pump::basalRateChanged, this, [&](double rate) {
-    pageControlIQ->setCurrentBasal(rate);  // Update current basal rate in UI
-});
-
-// Wire predictions from ControlIQ back into the UI
-connect(m_ctrlIQ, &ControlIQ::predictionMade, pageControlIQ, &ControlIQPage::setPredictedBG);
-connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, pageControlIQ, [&]() {
-    pageControlIQ->setNextAdjustment("Suspended (low BG)");
-});
+    // Wire predictions from ControlIQ back into the UI
+    connect(m_ctrlIQ, &ControlIQ::predictionMade, pageControlIQ, &ControlIQPage::setPredictedBG);
+    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, pageControlIQ, [&]() {
+        pageControlIQ->setNextAdjustment("Suspended (low BG)");
+    });
 
 }
 
