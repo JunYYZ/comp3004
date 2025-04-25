@@ -110,8 +110,19 @@ mainWindow::mainWindow(QWidget *parent)
     // Emit new glucose reading to graph
     connect(m_bgSim, &BGSimulator::newReading, this, [=](double bg) {
         static int timeStep = 0;
+<<<<<<< Updated upstream
         pageGraph->addBGPoint(timeStep++, bg);
     });
+=======
+        pageGraph->addBGPoint(timeStep++, bg); });
+
+    // Inside mainWindow.cpp
+    connect(m_pump, &Pump::bolusDelivered,
+            m_bgSim, &BGSimulator::onBolusDelivered);
+
+    connect(m_bgSim, &BGSimulator::newReading,
+            m_pump, &Pump::checkBG);
+>>>>>>> Stashed changes
 
     // show initial “00:00” battery/profile
     updateStatusBar(0);

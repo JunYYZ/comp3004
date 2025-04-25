@@ -2,7 +2,7 @@
 #include <QVBoxLayout>
 #include <QDebug>
 
-GraphWidget::GraphWidget(QWidget* parent)
+GraphWidget::GraphWidget(QWidget *parent)
     : QWidget(parent), currentTimeStep(0)
 {
     bgDots = new QScatterSeries();
@@ -31,6 +31,17 @@ void GraphWidget::addBGPoint(int timeStep, double bg)
     bgDots->append(timeStep, bg);
     currentTimeStep = timeStep;
 
-    chart->axes(Qt::Horizontal).first()->setRange(0, currentTimeStep + 1);
+    int start = std::max(0, currentTimeStep - m_timeWindow);
+    chart->axes(Qt::Horizontal).first()->setRange(start, currentTimeStep);
     chart->axes(Qt::Vertical).first()->setRange(2, 22);
+}
+
+void GraphWidget::resetGraph()
+{
+    bgDots->clear();
+}
+
+void GraphWidget::setTimeWindow(int seconds)
+{
+    m_timeWindow = seconds;
 }

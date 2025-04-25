@@ -1,18 +1,19 @@
 #include <QApplication>
-#include <QDebug>
-
 #include "mainWindow.h"
+<<<<<<< Updated upstream
 #include "SimulationClock.h"
 #include "CGM.h"
 #include "Pump.h"
 #include "ControlIQ.h"
 #include "EventLogger.h"
+=======
+>>>>>>> Stashed changes
 
 int main(int argc, char *argv[])
 {
-    // Use QApplication so we can show widgets
     QApplication app(argc, argv);
 
+<<<<<<< Updated upstream
     // The pump which delivers basal/bolus
     Pump* pump = new Pump(&app);
 
@@ -63,6 +64,8 @@ int main(int argc, char *argv[])
     pump->startInsulin();
 
     // --- Launch main window ---
+=======
+>>>>>>> Stashed changes
     mainWindow w;
     w.show();
 

@@ -9,11 +9,8 @@ GraphPage::GraphPage(QWidget *parent) :
     m_elapsedTime(0)
 {
     ui->setupUi(this);
-<<<<<<< Updated upstream
-=======
     connect(ui->btnBack, &QPushButton::clicked, this, &GraphPage::on_btnBack_clicked);
     connect(ui->comboRange, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphPage::onComboRangeChanged);
->>>>>>> Stashed changes
 }
 
 GraphPage::~GraphPage()
@@ -32,8 +29,6 @@ void GraphPage::addBGPoint(int timeStep, double bg)
     }
 }
 
-<<<<<<< Updated upstream
-=======
 void GraphPage::on_btnBack_clicked()
 {
     emit backRequested();
@@ -57,4 +52,3 @@ void GraphPage::onComboRangeChanged(int index)
     qDebug() << "Graph reset for range:" << m_timeLimit << "seconds.";
 }
 
->>>>>>> Stashed changes

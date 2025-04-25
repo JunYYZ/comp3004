@@ -26,7 +26,7 @@ void BGSimulator::onTick() {
         return;
     }
 
-    double carbAbsorbRate = 15.0;
+    double carbAbsorbRate = 2.0;
     double carbAbsorbed = std::min(carbEffect, carbAbsorbRate);
     double carbRise = carbAbsorbed * (1.0 / carbRatio);
     carbEffect -= carbAbsorbed;
@@ -41,7 +41,7 @@ void BGSimulator::onTick() {
     qDebug() << "[Graph] Logging BG:" << currentBG
              << "| Insulin:" << activeInsulin
              << "| CarbEffect:" << carbEffect
-             << "| ΔBG: + " << carbRise << " - " << insulinDrop << " = " << deltaBG;
+             << "| BG: + " << carbRise << " - " << insulinDrop << " = " << deltaBG;
 
     emit newReading(currentBG);
 }
