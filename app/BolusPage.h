@@ -1,49 +1,38 @@
 #pragma once
+
 #include <QWidget>
 #include "Pump.h"
-
-class Pump;               // fwd
 class ProfileManager;
 
-namespace Ui { class BolusPage; }
+namespace Ui {
+class BolusPage;
+}
 
-/*───────────────────────────────────────────────
-  Manual / Extended Bolus entry screen
- ───────────────────────────────────────────────*/
 class BolusPage : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit BolusPage(QWidget* parent = nullptr);
     ~BolusPage() override;
 
-    /* Main-window injects back-end singletons */
+    /// Must be called by MainWindow to give BolusPage its ProfileManager.
     void setProfileManager(ProfileManager* mgr);
-    void setPump          (Pump* p) { m_pump = p; }
+    void setPump(Pump* p) { m_pump = p; }
 
 signals:
     void backClicked();
 
 private slots:
-    /* normal bolus */
+    void on_carbsSpin_valueChanged(int grams);
+    void on_bgSpin_valueChanged(int bg);
     void on_btnDeliver_clicked();
-
-    /* NEW - extended bolus */
-    void on_btnExt_clicked();             ///< Deliver Extended
-    void on_immediatePct_changed(int);    ///< enable/disable Duration
-
-    /* spin-boxes re-calc suggestion */
-    void on_carbsSpin_valueChanged(int);
-    void on_bgSpin_valueChanged   (int);
-
-    /* back / cancel */
     void onBtnCancelClicked();
 
 private:
-    void updateSuggestion();              ///< recompute dose line
+    void updateSuggestion();
 
-    Ui::BolusPage*   ui   = nullptr;
-    ProfileManager*  m_profileManager = nullptr;
-    Pump*            m_pump           = nullptr;   // hooked in mainWindow
+    Ui::BolusPage*    ui;
+    ProfileManager*   m_profileManager;
+    Pump*            m_pump = nullptr;   // ← new
 };
-

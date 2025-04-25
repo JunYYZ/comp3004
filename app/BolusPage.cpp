@@ -1,8 +1,6 @@
 #include "BolusPage.h"
 #include "ui_BolusPage.h"
 #include "ProfileManager.h"
-#include <QTime>
-#include <QSpinBox>
 
 BolusPage::BolusPage(QWidget* parent)
   : QWidget(parent),
@@ -11,30 +9,14 @@ BolusPage::BolusPage(QWidget* parent)
 {
     ui->setupUi(this);
 
-
-
     // wire up your spin‐boxes (assuming you named them carbsSpin and bgSpin in Designer)
     connect(ui->sbCarbs, SIGNAL(valueChanged(int)),
             this,          SLOT(on_carbsSpin_valueChanged(int)));
     connect(ui->sbCurrentBG,    SIGNAL(valueChanged(int)),
             this,          SLOT(on_bgSpin_valueChanged(int)));
-    connect(ui->btnDeliverNow, &QPushButton::clicked, this, &BolusPage::on_btnDeliver_clicked);
+    connect(ui->btnDeliver, &QPushButton::clicked, this, &BolusPage::on_btnDeliver_clicked);
     connect(ui->btnCancel, &QPushButton::clicked,
             this, &BolusPage::onBtnCancelClicked);
-
-    /* ── NEW hooks for extended bolus ────────────────── */
-    connect(ui->btnDeliverExt, &QPushButton::clicked,
-            this,              &BolusPage::on_btnExt_clicked);          // NEW
-    /* just change <int> → <double> and &QDoubleSpinBox::valueChanged */
-    connect(ui->spnImmediatePct,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this,
-            &BolusPage::on_immediatePct_changed);
-
-
-    /* ensure Duration enabled|disabled correctly on start */
-    on_immediatePct_changed(ui->spnImmediatePct->value());              // NEW
-
     // initial display
     updateSuggestion();
 }
@@ -115,44 +97,3 @@ void BolusPage::updateSuggestion()
 void BolusPage::onBtnCancelClicked() {
     emit backClicked();
 }
-
-/*─────────────────────────────────────────────────────────
-  EXTENDED  bolus   ── NEW ───────────────────────────────*/
-void BolusPage::on_btnExt_clicked()                                    // NEW
-{
-    if (!m_profileManager || !m_pump) return;
-
-    /* recompute total units just like updateSuggestion() */
-    const Profile& prof = m_profileManager->activeProfile();
-    int grams      = ui->sbCarbs->value();
-    int currentBG  = ui->sbCurrentBG->value();
-
-    double carbBol = grams / prof.carbRatio();
-    double corrBol = (currentBG - prof.targetBG()) / prof.correctionFactor();
-    double totalU  = qMax(0.0, carbBol + corrBol);
-
-    /* gather square-wave parameters */
-    int pctNow   = ui->spnImmediatePct->value();         // % immediate
-    QTime dur    = ui->timeDuration->time();             // hh:mm
-    int  minutes = dur.hour()*60 + dur.minute();
-    if (minutes == 0) minutes = 5;                       // minimum 1 tick
-
-    /* hand off to Pump */
-    m_pump->deliverExtendedBolus(totalU, pctNow, minutes);
-
-    /* user feedback */
-    ui->lblSuggested->setText(
-        QString::asprintf("Ext %.1f U  (%d%% now)", totalU, pctNow));
-}
-
-/*─────────────────────────────────────────────────────────
-  %Immediate spin-box toggles Duration  ── NEW ───────────*/
-void BolusPage::on_immediatePct_changed(int pct)                      // NEW
-{
-    bool enable = pct < 100;
-    ui->timeDuration->setEnabled(enable);
-    updateSuggestion();
-}
-
-
-

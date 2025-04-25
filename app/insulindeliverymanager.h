@@ -1,9 +1,17 @@
-#pragma once
+#ifndef INSULINDELIVERYMANAGER_H
+#define INSULINDELIVERYMANAGER_H
+
 #include <QObject>
 #include <QTimer>
-#include <QVector>
+#include <QString>
 
-class SimulationClock;
+// Define the possible states for insulin delivery.
+enum class DeliveryState {
+    Stopped,
+    Running,
+    Paused,
+    Error
+};
 
 class InsulinDeliveryManager : public QObject
 {
@@ -11,48 +19,40 @@ class InsulinDeliveryManager : public QObject
 public:
     explicit InsulinDeliveryManager(QObject *parent = nullptr);
 
-    // configuration helpers
-    void setClock(SimulationClock *clk);
-    void setActiveProfile(const QString &name, double basalRateUph);
+    // Set the active profile along with its basal rate (units per hour).
+    void setActiveProfile(const QString &profileName, double basalRate);
 
-    // API called by UI / Control-IQ
-    bool startDelivery();      // begin basal
-    bool stopDelivery();       // pause basal
-    bool resumeDelivery();     // continue basal
-    void chargeBattery();      // +25 %
-    void deliverBolus(double units);          // manual or auto bolus
-    void loadCartridge();      // refill reservoir
+    double getInsulinRemaining() const { return m_insulinRemaining; }
 
-    // read-only getters
-    double currentIOB()   const;   // active insulin in U
-    double reservoir()    const { return m_insulinRemaining; }
-    int    battery()      const { return m_batteryPercent;  }
+    // Control functions for insulin delivery.
+    bool startDelivery();
+    bool stopDelivery();
+    bool resumeDelivery();
+
+    // Simulate feedback from the CGM for Control-IQ mode (e.g., auto-suspend on low BG).
+    void simulateCGMFeedback(double currentBG);
+
+    // Check for additional errors such as low insulin or other conditions.
+    void checkForErrors();
 
 signals:
-    // UI hooks
+    // Signals for GUI or log updates.
     void deliveryStarted();
     void deliveryStopped();
     void deliveryResumed();
-    void batteryLevelChanged(int);
-    void reservoirChanged(double);
-    void errorOccurred(const QString &msg);
-    void logEvent(const QString &msg);
+    void errorOccurred(const QString &errorMsg);
+    void logEvent(const QString &eventMsg);
 
 private slots:
-    void onBasalTick();        // every real 1 s (5 sim min)
+    // Callback for QTimer to simulate periodic insulin dosing.
+    void onDeliveryTimerTimeout();
 
 private:
-    struct ActiveDose { double units; int elapsedMin; };   // age in sim-minutes
-    void ageAndPruneIOB(int mins);     // helper
-
-    // data
-    enum class State { Stopped, Running, Paused } m_state = State::Stopped;
-    QString  m_activeProfile;
-    double   m_basalRateUph = 0.0;        // U / hour
-    double   m_insulinRemaining = 300.0;  // U
-    int      m_batteryPercent   = 100;    // %
-    QVector<ActiveDose> m_iob;            // active bolus list
-    int      m_insulinDuration  = 300;    // 5 h = 300 min
-    int      m_tickCounter      = 0;      // battery drain pacing
-    QTimer   m_basalTimer;
+    DeliveryState m_state;
+    QString m_activeProfile;    // Active user profile name.
+    double m_basalRate;         // Basal delivery rate (units per hour).
+    QTimer m_deliveryTimer;     // Timer to simulate dosing intervals.
+    double m_insulinRemaining;  // Simulated insulin reservoir in units.
 };
+
+#endif // INSULINDELIVERYMANAGER_H
