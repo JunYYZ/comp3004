@@ -7,7 +7,6 @@
 #include "HistoryLogPage.h"
 #include "ProfileEditorPage.h"
 #include "SimulationClock.h"
-#include "CGM.h"  // ✅ ADD THIS
 #include "BGSimulator.h"
 #include "ControlIQ.h"
 
@@ -78,7 +77,6 @@ private:
     SimulationClock*  m_clock;
     QDateTime m_simTime;
     Pump*             m_pump;
-    CGM*              m_cgm;         // remove
     ControlIQ*         m_ctrlIQ;
     HistoryLogPage*   m_historypage;
     ProfileManager*   m_profileManager;
