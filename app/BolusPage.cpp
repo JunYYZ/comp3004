@@ -11,13 +11,9 @@ BolusPage::BolusPage(QWidget* parent)
 {
     ui->setupUi(this);
 
-
-
     // wire up your spin‐boxes (assuming you named them carbsSpin and bgSpin in Designer)
     connect(ui->sbCarbs, SIGNAL(valueChanged(int)),
             this,          SLOT(on_carbsSpin_valueChanged(int)));
-    connect(ui->sbCurrentBG,    SIGNAL(valueChanged(int)),
-            this,          SLOT(on_bgSpin_valueChanged(int)));
     connect(ui->btnDeliverNow, &QPushButton::clicked, this, &BolusPage::on_btnDeliver_clicked);
     connect(ui->btnCancel, &QPushButton::clicked,
             this, &BolusPage::onBtnCancelClicked);
@@ -25,15 +21,10 @@ BolusPage::BolusPage(QWidget* parent)
     /* ── NEW hooks for extended bolus ────────────────── */
     connect(ui->btnDeliverExt, &QPushButton::clicked,
             this,              &BolusPage::on_btnExt_clicked);          // NEW
-    /* just change <int> → <double> and &QDoubleSpinBox::valueChanged */
     connect(ui->spnImmediatePct,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this,
             &BolusPage::on_immediatePct_changed);
-
-
-    /* ensure Duration enabled|disabled correctly on start */
-    on_immediatePct_changed(ui->spnImmediatePct->value());              // NEW
 
     // initial display
     updateSuggestion();
@@ -60,7 +51,7 @@ void BolusPage::on_btnDeliver_clicked()
 
   // grab the numbers
   int grams     = ui->sbCarbs->value();
-  int currentBG = ui->sbCurrentBG->value();
+  double currentBG = ui->currentBGLineEdit->text().toDouble();  // Get BG from currentBGLineEdit
 
   // calculate suggested bolus just like updateSuggestion()
   auto prof = m_profileManager->activeProfile();
@@ -77,12 +68,11 @@ void BolusPage::on_btnDeliver_clicked()
   );
 }
 
-void BolusPage::on_carbsSpin_valueChanged(int /*grams*/)
-{
-    updateSuggestion();
+void BolusPage::setCurrentBG(double bg) {
+    ui->currentBGLineEdit->setText(QString::number(bg, 'f', 1));  // Update the text in the QLineEdit
 }
 
-void BolusPage::on_bgSpin_valueChanged(int /*bg*/)
+void BolusPage::on_carbsSpin_valueChanged(int /*grams*/)
 {
     updateSuggestion();
 }
@@ -98,7 +88,7 @@ void BolusPage::updateSuggestion()
     double carbRatio       = profile.carbRatio();
     double correctionFact  = profile.correctionFactor();
     int    targetBG        = profile.targetBG();
-    int    currentBG       = ui->sbCurrentBG->value();
+    double currentBG       = ui->currentBGLineEdit->text().toDouble();  // Get BG from currentBGLineEdit
     int    grams           = ui->sbCarbs->value();
 
     // simple example: carb bolus + correction
@@ -118,20 +108,20 @@ void BolusPage::onBtnCancelClicked() {
 
 /*─────────────────────────────────────────────────────────
   EXTENDED  bolus   ── NEW ───────────────────────────────*/
-void BolusPage::on_btnExt_clicked()                                    // NEW
+void BolusPage::on_btnExt_clicked()
 {
     if (!m_profileManager || !m_pump) return;
 
-    /* recompute total units just like updateSuggestion() */
+    // Calculate total bolus units
     const Profile& prof = m_profileManager->activeProfile();
     int grams      = ui->sbCarbs->value();
-    int currentBG  = ui->sbCurrentBG->value();
+    double currentBG  = ui->currentBGLineEdit->text().toDouble();  // Get BG from currentBGLineEdit
 
     double carbBol = grams / prof.carbRatio();
     double corrBol = (currentBG - prof.targetBG()) / prof.correctionFactor();
     double totalU  = qMax(0.0, carbBol + corrBol);
 
-    /* gather square-wave parameters */
+    // Gather square-wave parameters
     int pctNow   = ui->spnImmediatePct->value();         // % immediate
     QTime dur    = ui->timeDuration->time();             // hh:mm
     int  minutes = dur.hour()*60 + dur.minute();
@@ -142,7 +132,7 @@ void BolusPage::on_btnExt_clicked()                                    // NEW
 
     /* user feedback */
     ui->lblSuggested->setText(
-        QString::asprintf("Ext %.1f U  (%d%% now)", totalU, pctNow));
+        QString::asprintf("Ext %.1f U (%d%% now)", totalU, pctNow));
 }
 
 /*─────────────────────────────────────────────────────────
@@ -154,5 +144,6 @@ void BolusPage::on_immediatePct_changed(int pct)                      // NEW
     updateSuggestion();
 }
 
-
-
+void BolusPage::updateCurrentBG(double bg) {
+    ui->currentBGLineEdit->setText(QString::number(bg, 'f', 1));  // Assuming currentBGLineEdit is the field in the UI
+}

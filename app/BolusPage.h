@@ -20,6 +20,11 @@ public:
     /* Main-window injects back-end singletons */
     void setProfileManager(ProfileManager* mgr);
     void setPump          (Pump* p) { m_pump = p; }
+    void setCurrentBG(double bg);
+
+public slots:
+    void updateCurrentBG(double bg);  // Slot to update BG from BGSimulator
+
 
 signals:
     void backClicked();
@@ -34,7 +39,6 @@ private slots:
 
     /* spin-boxes re-calc suggestion */
     void on_carbsSpin_valueChanged(int);
-    void on_bgSpin_valueChanged   (int);
 
     /* back / cancel */
     void onBtnCancelClicked();

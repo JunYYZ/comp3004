@@ -256,3 +256,6 @@ void Pump::deliverExtendedBolus(double totalUnits, int pctNow, int durationMin) 
     logEvent(QString("[Extended Bolus] Delivered %1 U immediately").arg(nowU));
 }
 
+PumpState Pump::state() const {
+    return m_state;  // assuming m_state is the state variable in the class
+}

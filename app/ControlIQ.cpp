@@ -36,32 +36,31 @@ bool ControlIQ::isEnabled() const
 
 void ControlIQ::onNewReading(double glucose)
 {
+    // Check if ControlIQ is enabled
     if (!m_enabled) {
-            emit predictionMade(std::numeric_limits<double>::quiet_NaN());
-            return;
-        }
+        emit predictionMade(std::numeric_limits<double>::quiet_NaN());
+        return;
+    }
 
     double prediction = predict30Min(glucose);
     emit predictionMade(prediction);
-    qDebug() << "[ControlIQ] BG:" << glucose << "→30′ pred:" << prediction;
 
-    // If predicted to go critically high, give a correction bolus:
+    // Logic to handle high/low BGs and basal delivery
     if (prediction > Pump::kCritHighBGThreshold) {
-        qDebug() << "[ControlIQ] Pred > high threshold – auto‐bolus!";
-        // use current glucose as “BG” so correctionFactor kicks in
-        m_pump->deliverBolus(static_cast<int>(glucose), /*carbs=*/0);
-
-    // If predicted to go critically low, suspend basal:
+        m_pump->deliverBolus(static_cast<int>(glucose), 0);  // Handle bolus delivery
     } else if (prediction < Pump::kCritLowBGThreshold) {
-        qDebug() << "[ControlIQ] Pred < low threshold – suspend basal!";
-        m_pump->stopInsulin();
+        m_pump->stopInsulin();  // Stop basal if BG is low
         emit stoppedForLowBG();
-    // Otherwise, ensure basal is running:
     } else {
-        // resume only if we were previously suspended
-        m_pump->resumeInsulin();
+        m_pump->resumeInsulin();  // Resume basal delivery if BG is normal
+    }
+
+    // Decrease insulin in the status bar as basal insulin is being delivered
+    if (m_pump->state() == PumpState::DELIVERING_BASAL) {
+        emit insulinLevelUpdated(m_pump->insulinLevel());  // Emit updated insulin level
     }
 }
+
 
 double ControlIQ::predict30Min(double currentBG)
 {

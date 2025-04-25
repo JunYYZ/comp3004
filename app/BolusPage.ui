@@ -39,22 +39,6 @@
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="sbCurrentBG">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>1.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>25.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="lblCarbs">
         <property name="text">
@@ -105,6 +89,9 @@
       </item>
       <item row="3" column="1">
        <widget class="QTimeEdit" name="timeDuration"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="currentBGLineEdit"/>
       </item>
      </layout>
     </item>

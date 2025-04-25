@@ -133,6 +133,10 @@ mainWindow::mainWindow(QWidget *parent)
         pageGraph->addBGPoint(timeStep++, bg);
     });
 
+    // Inside mainWindow.cpp
+    connect(m_bgSim, &BGSimulator::newReading, pageBolus, &BolusPage::updateCurrentBG);
+
+
     // show initial “00:00” battery/profile
     updateStatusBar(0);
 

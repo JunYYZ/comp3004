@@ -24,6 +24,7 @@ signals:
     void enabledChanged(bool enabled);
     void predictionMade(double prediction);
     void stoppedForLowBG();
+    void insulinLevelUpdated(int newLevel);
 
 private:
     double predict30Min(double currentBG);
