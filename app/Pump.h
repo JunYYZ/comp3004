@@ -31,7 +31,7 @@ public:
     int batteryLevel() const;
     int insulinLevel() const;
     PumpState state() const;
-    QVector<Profile> profiles() const;
+    const QVector<Profile>& profiles() const { return m_profiles; }
     void addProfile(const Profile &p);
     bool selectActiveProfile(const QString &name);
     void startInsulin();
@@ -43,6 +43,7 @@ public:
     double getInsulinOnBoard() const;
     void maybeEmitIOB();
     void logEvent(const QString &desc);
+    int getActiveProfileIndex() const { return m_activeProfileIndex; }
 
     static constexpr int kLowBatteryThreshold = 20;
     static constexpr int kLowInsulinThreshold = 30;

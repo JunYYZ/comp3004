@@ -1,4 +1,3 @@
-// ControlIQPage.cpp
 #include "ControlIQPage.h"
 #include "ui_ControlIQPage.h"
 
@@ -29,6 +28,7 @@ void ControlIQPage::setStatus(const QString &status)
 
 void ControlIQPage::setCurrentBasal(double rate)
 {
+    m_currentBasalRate = rate;  // Update the basal rate when set
     ui->lblCurrentBasalVal->setText(QString::number(rate, 'f', 2) + " U/hr");
 }
 
@@ -41,14 +41,25 @@ void ControlIQPage::setPredictedBG(double bg)
 void ControlIQPage::on_btnTurnOnCIQ_clicked()
 {
     emit controlIQTurnedOn();  // Emit signal to enable ControlIQ
+    // Optionally update the basal rate here if required
+    setCurrentBasal(m_currentBasalRate);  // Update UI
 }
 
 void ControlIQPage::on_btnTurnOffCIQ_clicked()
 {
     emit controlIQTurnedOff();  // Emit signal to disable ControlIQ
+    // Set basal rate to 0 when ControlIQ is off
+    m_currentBasalRate = 0.0;
+    setCurrentBasal(m_currentBasalRate);  // Update UI
 }
 
 void ControlIQPage::on_btnBackCIQ_clicked()
 {
     emit backClicked();
+}
+
+// Function to return current basal rate
+double ControlIQPage::getCurrentBasalRate() const
+{
+    return m_currentBasalRate;  // Return the stored basal rate
 }

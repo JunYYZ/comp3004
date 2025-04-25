@@ -15,7 +15,6 @@ public:
     explicit ControlIQ(Pump* pump, QObject* parent=nullptr);
 
     bool isEnabled() const;
-
 public slots:
     void setEnabled(bool on);
     void onNewReading(double glucose);
