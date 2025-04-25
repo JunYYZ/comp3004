@@ -2,7 +2,7 @@
 
 Team Number: 29
 
-Team Members: Nimish Bhatia, Michael Palummieri, , Nischal Shrestha, Junheng Zhang
+Team Members: Nimish Bhatia, Michael Palummieri, Sajitha Polwatta, Nischal Shrestha, Junheng Zhang
 
 Github Link: https://github.com/JunYYZ/comp3004/
 
@@ -11,14 +11,14 @@ Github Link: https://github.com/JunYYZ/comp3004/
 # Project Distribution
 
 All:\
-Use cases\
+Use cases
 
 
 Nimish Bhatia:\
 Graph\
 CGM\
 UML State Machine for Insulin Delivery Subsystem\
-UML State Machine for Pump Controller\
+UML State Machine for Pump Controller
 
 
 Michael Palummieri:\
@@ -27,20 +27,20 @@ Bolus Calaculator\
 Manual Bolus\
 Pump\
 main\
-GUI\
+GUI
 
 
 Sajitha Polwatta:\
 Profile\
 profile crud/manager\
 Video\
-Normal Sequence Diagram\
+Normal Sequence Diagram
 
 
 Nischal Shrestha:\
 insulin delivery manager\
 extended manual bolus\
-Safety Sequence Diagram\
+Safety Sequence Diagram
 
 
 Junheng Zhang:\
@@ -50,31 +50,31 @@ Error handling\
 Pump\
 main\
 tests\
-UML Class diagram\
+UML Class diagram
 
 # Compiling and running
-To compile after unzipping,
+To compile after unzipping,\
 do:
 
-cd app (go to app folder)
-qmake
+cd app (go to app folder)\
+qmake\
 make
 
 **OR** if that doesn't work
 
-qmake app.pro
+qmake app.pro\
 make
 
-To run:
+To run:\
 ./tslimSimulator
 
 or just double click the .exe
 
 **IF QT CHARTS ERROR**
-DO:
-sudo add-apt-repository universe
-sudo apt update
-sudo apt install libqt5charts5-dev
+DO:\
+sudo add-apt-repository universe\
+sudo apt update\
+sudo apt install libqt5charts5-dev\
 sudo apt install qml-module-qtcharts
 
 Then redo compile and running steps.
