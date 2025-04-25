@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "Profile.h"
-
+//Test
 class BGSimulator : public QObject {
     Q_OBJECT
 
