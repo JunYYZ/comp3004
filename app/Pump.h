@@ -55,6 +55,7 @@ public slots:
     void checkLevels();
     void chargeBattery();
     void fillInsulin();
+    void checkBG(double mmol);
 
 signals:
     void pumpLog(const QString &msg);

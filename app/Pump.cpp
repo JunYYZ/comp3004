@@ -259,3 +259,31 @@ void Pump::deliverExtendedBolus(double totalUnits, int pctNow, int durationMin) 
 PumpState Pump::state() const {
     return m_state;  // assuming m_state is the state variable in the class
 }
+
+
+void Pump::checkBG(double bg)
+{
+    if (bg <= 2)
+    {
+        m_errorHandler->raise(ErrorHandler::BGLow,
+                              QString("BG critically low (%1 mmol/L) – stopping insulin")
+                              .arg(bg));
+        
+    stopInsulin();
+    }
+    else{
+        m_errorHandler->clear(ErrorHandler::BGLow);
+        resumeInsulin();
+    }
+
+    if (bg >= 10)
+    {
+        m_errorHandler->raise(ErrorHandler::BGHigh,
+                              QString("BG high (%1 mmol/L) – giving correction dose")
+                              .arg(bg));
+
+        deliverBolus(qRound(bg), 0);  
+    }
+    else
+        m_errorHandler->clear(ErrorHandler::BGHigh);
+}
