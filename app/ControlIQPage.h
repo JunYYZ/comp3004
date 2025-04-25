@@ -21,8 +21,7 @@ public:
     void setCurrentBasal(double rate);
     // Update the predicted BG in mmol/L
     void setPredictedBG(double bg);
-    // Update the description of the next automated adjustment
-    void setNextAdjustment(const QString &adj);
+
 
 signals:
     void controlIQTurnedOn();  // Emitted when the "Turn On" button is clicked

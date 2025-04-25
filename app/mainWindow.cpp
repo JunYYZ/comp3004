@@ -189,20 +189,9 @@ mainWindow::mainWindow(QWidget *parent)
             pageControlIQ->setPredictedBG(pred);  // Show the predicted BG
     });
 
-    // Handle low BG warning and stop Control-IQ if needed
-    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, this, [&]() {
-        pageControlIQ->setNextAdjustment("Suspended (low BG)");  // Show suspension message
-    });
-
     // Keep the "Current Basal" in sync with the pump's basal rate
     connect(m_pump, &Pump::basalRateChanged, this, [&](double rate) {
         pageControlIQ->setCurrentBasal(rate);  // Update current basal rate in UI
-    });
-
-    // Wire predictions from ControlIQ back into the UI
-    connect(m_ctrlIQ, &ControlIQ::predictionMade, pageControlIQ, &ControlIQPage::setPredictedBG);
-    connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, pageControlIQ, [&]() {
-        pageControlIQ->setNextAdjustment("Suspended (low BG)");
     });
 
 }

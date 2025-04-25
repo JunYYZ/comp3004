@@ -37,10 +37,6 @@ void ControlIQPage::setPredictedBG(double bg)
     ui->lblPredictedBGVal->setText(QString::number(bg, 'f', 1) + " mmol/L");
 }
 
-void ControlIQPage::setNextAdjustment(const QString &adj)
-{
-    ui->lblNextAdjustmentVal->setText(adj);
-}
 
 void ControlIQPage::on_btnTurnOnCIQ_clicked()
 {
