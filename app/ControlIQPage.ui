@@ -54,7 +54,7 @@
     <item row="0" column="1">
      <widget class="QLabel" name="lblIQStatusVal">
       <property name="text">
-       <string>Active</string>
+       <string/>
       </property>
      </widget>
     </item>
@@ -92,9 +92,22 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QPushButton" name="btnToggleCIQ">
+     <widget class="QPushButton" name="btnTurnOff">
       <property name="text">
-       <string>On/Off</string>
+       <string>Turn On</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnTurnOn">
+      <property name="text">
+       <string>Turn Off</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

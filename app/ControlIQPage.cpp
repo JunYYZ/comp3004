@@ -6,9 +6,13 @@ ControlIQPage::ControlIQPage(QWidget *parent)
   : QWidget(parent), ui(new Ui::ControlIQPage)
 {
     ui->setupUi(this);
-    connect(ui->btnToggleCIQ, &QPushButton::clicked, this, &ControlIQPage::on_btnToggleCIQ_clicked);
-    connect(ui->btnBackCIQ,   &QPushButton::clicked, this, &ControlIQPage::on_btnBackCIQ_clicked);
+
+    // Connect the UI buttons to our signals
+    connect(ui->btnTurnOn, &QPushButton::clicked, this, &ControlIQPage::on_btnTurnOnCIQ_clicked);
+    connect(ui->btnTurnOff, &QPushButton::clicked, this, &ControlIQPage::on_btnTurnOffCIQ_clicked);
+    connect(ui->btnBackCIQ, &QPushButton::clicked, this, &ControlIQPage::on_btnBackCIQ_clicked);
 }
+
 
 ControlIQPage::~ControlIQPage()
 {
@@ -18,7 +22,9 @@ ControlIQPage::~ControlIQPage()
 void ControlIQPage::setStatus(const QString &status)
 {
     ui->lblIQStatusVal->setText(status);
-    ui->btnToggleCIQ->setText(status == "Active" ? "Turn Off" : "Turn On");
+    // Update button texts when the status changes
+    ui->btnTurnOn->setText(status == "Active" ? "ControlIQ is Active" : "Turn On");
+    ui->btnTurnOff->setText(status == "Inactive" ? "ControlIQ is Inactive" : "Turn Off");
 }
 
 void ControlIQPage::setCurrentBasal(double rate)
@@ -36,9 +42,14 @@ void ControlIQPage::setNextAdjustment(const QString &adj)
     ui->lblNextAdjustmentVal->setText(adj);
 }
 
-void ControlIQPage::on_btnToggleCIQ_clicked()
+void ControlIQPage::on_btnTurnOnCIQ_clicked()
 {
-    emit toggleClicked();
+    emit controlIQTurnedOn();  // Emit signal to enable ControlIQ
+}
+
+void ControlIQPage::on_btnTurnOffCIQ_clicked()
+{
+    emit controlIQTurnedOff();  // Emit signal to disable ControlIQ
 }
 
 void ControlIQPage::on_btnBackCIQ_clicked()

@@ -11,11 +11,15 @@
 #include "ControlIQPage.h"
 #include "WarningDialog.h"
 #include "HistoryLog.h"
+
 #include <QMessageBox>
+#include "ControlIQ.h"
+
 
 #include <QDebug>
 #include <QTimer>
 #include <QTime>      // for converting minutes→hh:mm:ss
+#include <QtGlobal>
 
 mainWindow::mainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -37,6 +41,7 @@ mainWindow::mainWindow(QWidget *parent)
     , m_bgSim(new BGSimulator(this))
 
 {
+    m_ctrlIQ = new ControlIQ(m_pump, this);
     m_profileManager->loadProfilesFromFile();
     ui->setupUi(this);
 
@@ -66,6 +71,12 @@ mainWindow::mainWindow(QWidget *parent)
     connect(ui->menuLock, &QMenu::aboutToShow, this, &mainWindow::onActionLock);
     connect(ui->menuCharge_Battery, &QMenu::aboutToShow,
                 this,               &mainWindow::onChargeBattery);
+
+    // pump status bar updates
+    connect(m_pump, &Pump::insulinLevelChanged,
+            this,   &mainWindow::refreshStatusBar);
+
+
     // build our stacked widget
     ui->stackedPages->addWidget(pageLock);
     ui->stackedPages->addWidget(pageHome);
@@ -91,12 +102,18 @@ mainWindow::mainWindow(QWidget *parent)
     // Connect BG simulator to profile
     m_bgSim->setProfile(m_profileManager->activeProfile());
     m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
-
+    pageControlIQ->setStatus( m_ctrlIQ->isEnabled() ? "Active" : "Off" );
+    pageControlIQ->setCurrentBasal(
+        m_profileManager->activeProfile().basalRate()
+    );
     // Update BG simulator if profile changes
     connect(m_profileManager, &ProfileManager::profileChanged, this, [=]() {
         m_bgSim->setProfile(m_profileManager->activeProfile());
         m_pump->selectActiveProfile(m_profileManager->activeProfile().name());
     });
+    // ── wire BGSimulator → Control-IQ ──
+    connect(m_bgSim, &BGSimulator::newReading,
+            m_ctrlIQ, &ControlIQ::onNewReading);
 
     // Connect simulation clock to BG updates
     connect(m_clock, &SimulationClock::tick,
@@ -106,6 +123,9 @@ mainWindow::mainWindow(QWidget *parent)
     connect(m_pump, QOverload<double, int>::of(&Pump::bolusDelivered),
             m_bgSim, &BGSimulator::onBolusDelivered);
 
+    // wire pump basal-rate signals to the UI
+    connect(m_pump, &Pump::basalRateChanged,
+            pageControlIQ, &ControlIQPage::setCurrentBasal);
 
     // Emit new glucose reading to graph
     connect(m_bgSim, &BGSimulator::newReading, this, [=](double bg) {
@@ -127,30 +147,65 @@ mainWindow::mainWindow(QWidget *parent)
     connect(this, &mainWindow::guiLog,
             pageHistoryLog, &HistoryLogPage::addEntry);
 
-    pageHome->setPump(m_pump);                          // NEW ①
+// HomePage updates and IOB tracking from dev-nischal
+pageHome->setPump(m_pump);  // Set the pump on HomePage for IOB tracking
 
+// Connect IOB updates to the HomePage for displaying IOB
+connect(m_pump, &Pump::iobChanged, pageHome, &HomePage::setIOB); 
 
+// Show a message when insulin on board (IOB) is depleted
+connect(m_pump, &Pump::iobChanged, this, [this](double u){
+    if (u <= 0.0) {
+        QMessageBox::information(
+            this,
+            tr("IOB Depleted"),
+            tr("You have no active insulin on board.")
+        );
+    }
+});
 
-                            // NEW ①
-    connect(m_pump, &Pump::iobChanged,
-            pageHome, &HomePage::setIOB);               // NEW ②
+// Control IQ logic from dev-michael
 
+// Wire the "Turn On" button for Control-IQ
+connect(pageControlIQ, &ControlIQPage::controlIQTurnedOn, this, [this]() {
+    m_ctrlIQ->setEnabled(true);  // Turn ControlIQ on
+    pageControlIQ->setStatus("Active");
+});
 
-    // in your mainWindow constructor, right after you connect iobChanged→setIOB:
-    connect(m_pump, &Pump::iobChanged, this, [this](double u){
-        if (u <= 0.0) {
-            QMessageBox::information(
-                this,
-                tr("IOB Depleted"),
-                tr("You have no active insulin on board.")
-            );
-        }
-    });
+// Wire the "Turn Off" button for Control-IQ
+connect(pageControlIQ, &ControlIQPage::controlIQTurnedOff, this, [this]() {
+    m_ctrlIQ->setEnabled(false);  // Turn ControlIQ off
+    pageControlIQ->setStatus("Inactive");
+});
 
+// Update ControlIQ status based on its enabled state
+connect(m_ctrlIQ, &ControlIQ::enabledChanged, this, [=](bool on){
+    pageControlIQ->setStatus(on ? "Active" : "Off");
+});
 
+// Update the predicted BG value in ControlIQPage
+connect(m_ctrlIQ, &ControlIQ::predictionMade, this, [=](double pred){
+    if (qIsNaN(pred))
+        pageControlIQ->setPredictedBG(0.0);  // Show 0.0 for NaN predictions
+    else
+        pageControlIQ->setPredictedBG(pred);  // Show the predicted BG
+});
 
+// Handle low BG warning and stop Control-IQ if needed
+connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, this, [&]() {
+    pageControlIQ->setNextAdjustment("Suspended (low BG)");  // Show suspension message
+});
 
+// Keep the "Current Basal" in sync with the pump's basal rate
+connect(m_pump, &Pump::basalRateChanged, this, [&](double rate) {
+    pageControlIQ->setCurrentBasal(rate);  // Update current basal rate in UI
+});
 
+// Wire predictions from ControlIQ back into the UI
+connect(m_ctrlIQ, &ControlIQ::predictionMade, pageControlIQ, &ControlIQPage::setPredictedBG);
+connect(m_ctrlIQ, &ControlIQ::stoppedForLowBG, pageControlIQ, [&]() {
+    pageControlIQ->setNextAdjustment("Suspended (low BG)");
+});
 
 }
 
@@ -331,14 +386,18 @@ void mainWindow::updateStatusBar(int simMinutes)
     t = t.addSecs(simMinutes * 60);
 
     int battery = m_pump->batteryLevel();
+    double basal = m_profileManager->activeProfile().basalRate();
+    double insulin = m_pump->insulinLevel();
     QString prof = m_profileManager->activeProfile().name();
     if (prof.isEmpty()) prof = QLatin1String("<none>");
 
     ui->statusbar->showMessage(
-        QString("Time: %1    Battery: %2%    Profile: %3")
+        QString("Time %1   Profile %2   Basal %3 U/h   Insulin %4 U   Battery %5%")
         .arg(t.toString("hh:mm:ss"))
-        .arg(battery)
         .arg(prof)
+        .arg(basal)
+        .arg(insulin)
+        .arg(battery)
     );
 }
 

@@ -9,6 +9,7 @@
 #include "SimulationClock.h"
 #include "CGM.h"  // ✅ ADD THIS
 #include "BGSimulator.h"
+#include "ControlIQ.h"
 
 class HomePage;
 class LockPage;
@@ -78,6 +79,7 @@ private:
     QDateTime m_simTime;
     Pump*             m_pump;
     CGM*              m_cgm;         // remove
+    ControlIQ*         m_ctrlIQ;
     HistoryLogPage*   m_historypage;
     ProfileManager*   m_profileManager;
     HomePage*         pageHome;
