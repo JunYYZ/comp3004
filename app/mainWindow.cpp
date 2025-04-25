@@ -168,17 +168,27 @@ mainWindow::mainWindow(QWidget *parent)
     connect(pageControlIQ, &ControlIQPage::controlIQTurnedOn, this, [this]() {
         m_ctrlIQ->setEnabled(true);  // Turn ControlIQ on
         pageControlIQ->setStatus("Active");
+
+        // Update basal rate to the current value
+        double basalRate = m_pump->profiles()[m_pump->getActiveProfileIndex()].basalRate();
+        pageControlIQ->setCurrentBasal(basalRate);
     });
 
     // Wire the "Turn Off" button for Control-IQ
     connect(pageControlIQ, &ControlIQPage::controlIQTurnedOff, this, [this]() {
         m_ctrlIQ->setEnabled(false);  // Turn ControlIQ off
         pageControlIQ->setStatus("Inactive");
+
+        // Set basal rate to 0 when Control-IQ is off
+        pageControlIQ->setCurrentBasal(0.0);
     });
 
     // Update ControlIQ status based on its enabled state
     connect(m_ctrlIQ, &ControlIQ::enabledChanged, this, [=](bool on){
         pageControlIQ->setStatus(on ? "Active" : "Off");
+        // Update basal rate
+        double basalRate = on ? m_pump->profiles()[m_pump->getActiveProfileIndex()].basalRate() : 0.0;
+        pageControlIQ->setCurrentBasal(basalRate);
     });
 
     // Update the predicted BG value in ControlIQPage
@@ -373,7 +383,8 @@ void mainWindow::updateStatusBar(int simMinutes)
     t = t.addSecs(simMinutes * 60);
 
     int battery = m_pump->batteryLevel();
-    double basal = m_profileManager->activeProfile().basalRate();
+    // Get the basal rate from ControlIQPage instead of ProfileManager
+    double basal = pageControlIQ->getCurrentBasalRate();  // Fetch from the pageControlIQ
     double insulin = m_pump->insulinLevel();
     QString prof = m_profileManager->activeProfile().name();
     if (prof.isEmpty()) prof = QLatin1String("<none>");
@@ -382,11 +393,13 @@ void mainWindow::updateStatusBar(int simMinutes)
         QString("Time %1   Profile %2   Basal %3 U/h   Insulin %4 U   Battery %5%")
         .arg(t.toString("hh:mm:ss"))
         .arg(prof)
-        .arg(basal)
+        .arg(basal)  // Now shows basal rate from pageControlIQ
         .arg(insulin)
         .arg(battery)
     );
 }
+
+
 
 void mainWindow::refreshStatusBar() {
     updateStatusBar(m_clock->elapsedMinutes());

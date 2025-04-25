@@ -21,7 +21,7 @@ public:
     void setCurrentBasal(double rate);
     // Update the predicted BG in mmol/L
     void setPredictedBG(double bg);
-
+    double getCurrentBasalRate() const;
 
 signals:
     void controlIQTurnedOn();  // Emitted when the "Turn On" button is clicked
@@ -35,6 +35,7 @@ private slots:
 
 private:
     Ui::ControlIQPage *ui;
+    double m_currentBasalRate = 0.0;  // Store the basal rate in the page
 };
 
 #endif // CONTROLIQPAGE_H
