@@ -50,7 +50,8 @@ Error handling\
 Pump\
 main\
 tests\
-UML Class diagram
+UML Class diagram\
+Use Case Diagram
 
 # Compiling and running
 To compile after unzipping,\
