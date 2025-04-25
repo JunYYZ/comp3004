@@ -29,7 +29,6 @@ SOURCES += \
     ProfileManager.cpp \
     Pump.cpp \
     SimulationClock.cpp \
-    CGM.cpp \
     ControlIQ.cpp \
     EventLogger.cpp \
     ChartModel.cpp \
@@ -57,7 +56,6 @@ HEADERS += \
     ProfileManager.h \
     Pump.h \
     SimulationClock.h \
-    CGM.h \
     ControlIQ.h \
     EventLogger.h \
     ChartModel.h \
