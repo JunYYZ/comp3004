@@ -84,6 +84,7 @@ launch Qt Creator by double clicking the app.pro file and configure the project 
 
 
 # Project organization:
+```
 .
 └── comp3004-project/
     ├── readme.md                   -- this readme
@@ -157,9 +158,7 @@ launch Qt Creator by double clicking the app.pro file and configure the project 
         │   ├── UML State Machine for Insulin Delivery Subsystem.png
         │   └── UML State Machine for Pump Controller.png
         ├── project-plan
-        
         ├── project-doc             -- use cases, use case diagram, traceability matrix
-
         ├── use case diagram.png    -- separate use case diagram in case the one in the doc breaks
-
         └── video.mov               -- project video showing normal operation and testing the normal operation
+```
