@@ -10,47 +10,47 @@ Github Link: https://github.com/JunYYZ/comp3004/
 
 # Project Distribution
 
-All:
-Use cases
+All:\
+Use cases\
 
 
-Nimish Bhatia:
-Graph
-CGM
-UML State Machine for Insulin Delivery Subsystem
-UML State Machine for Pump Controller
+Nimish Bhatia:\
+Graph\
+CGM\
+UML State Machine for Insulin Delivery Subsystem\
+UML State Machine for Pump Controller\
 
 
-Michael Palummieri:
-Control IQ
-Bolus Calaculator
-Manual Bolus
-Pump
-main
-GUI
+Michael Palummieri:\
+Control IQ\
+Bolus Calaculator\
+Manual Bolus\
+Pump\
+main\
+GUI\
 
 
-Sajitha Polwatta:
-Profile 
-profile crud/manager
-Video
-Normal Sequence Diagram
+Sajitha Polwatta:\
+Profile\
+profile crud/manager\
+Video\
+Normal Sequence Diagram\
 
 
-Nischal Shrestha:
-insulin delivery manager
-extended manual bolus
-Safety Sequence Diagram
+Nischal Shrestha:\
+insulin delivery manager\
+extended manual bolus\
+Safety Sequence Diagram\
 
 
-Junheng Zhang:
-Warnings
-Logs
-Error handling
-Pump
-main
-tests
-UML Class diagram
+Junheng Zhang:\
+Warnings\
+Logs\
+Error handling\
+Pump\
+main\
+tests\
+UML Class diagram\
 
 # Compiling and running
 To compile after unzipping,
