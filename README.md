@@ -52,6 +52,36 @@ main
 tests
 UML Class diagram
 
+# Compiling and running
+To compile after unzipping,
+do:
+
+cd app (go to app folder)
+qmake
+make
+
+**OR** if that doesn't work
+
+qmake app.pro
+make
+
+To run:
+./tslimSimulator
+
+or just double click the .exe
+
+**IF QT CHARTS ERROR**
+DO:
+sudo add-apt-repository universe
+sudo apt update
+sudo apt install libqt5charts5-dev
+sudo apt install qml-module-qtcharts
+
+Then redo compile and running steps.
+
+**ALTERNATIVELY**
+launch Qt Creator by double clicking the app.pro file and configure the project to build and run using ide.
+
 
 # Project organization:
 .
@@ -130,34 +160,3 @@ UML Class diagram
         ├── project-doc             -- use cases, use case diagram, traceability matrix
         ├── use case diagram.png    -- separate use case diagram in case the one in the doc breaks
         └── video.mov               -- project video showing normal operation and testing the normal operation
-
-
-# Compiling and running
-To compile after unzipping,
-do:
-
-cd app (go to app folder)
-qmake
-make
-
-**OR** if that doesn't work
-
-qmake app.pro
-make
-
-To run:
-./tslimSimulator
-
-or just double click the .exe
-
-**IF QT CHARTS ERROR**
-DO:
-sudo add-apt-repository universe
-sudo apt update
-sudo apt install libqt5charts5-dev
-sudo apt install qml-module-qtcharts
-
-Then redo compile and running steps.
-
-**ALTERNATIVELY**
-launch Qt Creator by double clicking the app.pro file and configure the project to build and run using ide.
