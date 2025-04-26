@@ -48,11 +48,11 @@ int main(int argc, char *argv[])
                      });
 
     // Pump emits pumpLog() for any event — log + print
-    QObject::connect(pump, &Pump::pumpLog,
-                     [&](const QString &msg){
-                         logger->log(msg);
-                         qDebug() << msg;
-                     });
+    // QObject::connect(pump, &Pump::pumpLog,
+    //                  [&](const QString &msg){
+    //                      logger->log(msg);
+    //                      qDebug() << msg;
+    //                  });
 
     QObject::connect(pump,   &Pump::pumpLog,
                      logger, &EventLogger::log);
