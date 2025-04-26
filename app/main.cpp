@@ -1,6 +1,4 @@
 #include <QApplication>
-#include <QDebug>
-
 #include "mainWindow.h"
 #include "SimulationClock.h"
 #include "Pump.h"
@@ -10,7 +8,6 @@
 
 int main(int argc, char *argv[])
 {
-    // Use QApplication so we can show widgets
     QApplication app(argc, argv);
 
     // The pump which delivers basal/bolus
