@@ -161,6 +161,5 @@ launch Qt Creator by double clicking the app.pro file and configure the project 
         │   └── UML State Machine for Pump Controller.png
         ├── project-plan
         ├── project-doc             -- use cases, use case diagram, traceability matrix
-        ├── use case diagram.png    -- separate use case diagram in case the one in the doc breaks
-        └── video.mov               -- project video showing normal operation and testing the normal operation
+        └── use case diagram.png    -- separate use case diagram in case the one in the doc breaks
 ```
