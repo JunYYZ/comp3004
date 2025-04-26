@@ -1,19 +1,15 @@
 #include <QApplication>
 #include "mainWindow.h"
-<<<<<<< Updated upstream
 #include "SimulationClock.h"
-#include "CGM.h"
 #include "Pump.h"
 #include "ControlIQ.h"
 #include "EventLogger.h"
-=======
->>>>>>> Stashed changes
+#include "BGSimulator.h"  // Include BGSimulator instead of CGM
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-<<<<<<< Updated upstream
     // The pump which delivers basal/bolus
     Pump* pump = new Pump(&app);
 
@@ -21,11 +17,11 @@ int main(int argc, char *argv[])
     // 1 real second = 5 simulated minutes
     SimulationClock* clock = new SimulationClock(1000, 5, /* parent: */ &app);
     clock->start();
-    // CGM emits a reading every 5 simulated minutes
-    CGM* cgm = new CGM(5, /* parent: */ &app);
+
+    // BGSimulator emits a reading every 5 simulated minutes
+    BGSimulator* bgSimulator = new BGSimulator(&app);  // Replace CGM with BGSimulator
 
     pump->setSimulationClock(clock);
-
 
     // Control‑IQ closed‑loop controller
     ControlIQ* ctrlIQ = new ControlIQ(pump, &app);
@@ -35,17 +31,15 @@ int main(int argc, char *argv[])
 
     // --- Wire up the simulation ---
     QObject::connect(clock, &SimulationClock::tick,
-                     cgm,   &CGM::onTick);
-//    QObject::connect(clock, &SimulationClock::tick,
-//                     pump,  &Pump::checkLevels);
+                     bgSimulator, &BGSimulator::onTick);  // Connect clock to BGSimulator
 
-    // When CGM has a new reading, drive Control‑IQ and log
-    QObject::connect(cgm, &CGM::newReading,
+    // When BGSimulator has a new reading, drive Control‑IQ and log
+    QObject::connect(bgSimulator, &BGSimulator::newReading,
                      ctrlIQ, &ControlIQ::onNewReading);
-    QObject::connect(cgm, &CGM::newReading,
+    QObject::connect(bgSimulator, &BGSimulator::newReading,
                      [&](double glucose){
                          logger->log(
-                             QString("CGM reading: %1 mmol/L")
+                             QString("BG reading: %1 mmol/L")
                                  .arg(glucose, 0, 'f', 1)
                          );
                      });
@@ -60,12 +54,10 @@ int main(int argc, char *argv[])
     QObject::connect(pump,   &Pump::pumpLog,
                      logger, &EventLogger::log);
 
-    // --- Start basal EventLogger*  logger = new EventLogger(&app); and the sim clock ---
+    // --- Start basal EventLogger* logger = new EventLogger(&app); and the sim clock ---
     pump->startInsulin();
 
     // --- Launch main window ---
-=======
->>>>>>> Stashed changes
     mainWindow w;
     w.show();
 

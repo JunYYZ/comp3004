@@ -25,55 +25,71 @@
    <layout class="QFormLayout" name="formLayout">
     <item row="0" column="0">
      <widget class="QLabel" name="lblIQ">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Control-IQ Status:</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="lblNextAdjustment">
-      <property name="text">
-       <string>Next Automated Adjustment:</string>
+    <item row="0" column="1">
+     <widget class="QLabel" name="lblIQStatusVal">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="lblPredictedBG">
       <property name="text">
-       <string>Predicted BG (30 min):</string>
+       <string/>
       </property>
      </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="lblCurrentBasal">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Current Basal Rate (U/hr):</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="lblIQStatusVal">
+    <item row="1" column="1">
+     <widget class="QLabel" name="lblCurrentBasalVal">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
-       <string>Active</string>
+       <string/>
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="lblCurrentBasalVal">
+    <item row="2" column="0">
+     <widget class="QLabel" name="lblPredictedBG">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
-       <string/>
+       <string>Predicted BG (30 min):</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
      <widget class="QLabel" name="lblPredictedBGVal">
-      <property name="text">
-       <string/>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="lblNextAdjustmentVal">
       <property name="text">
        <string/>
       </property>
@@ -84,17 +100,30 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>400</x>
+     <x>270</x>
      <y>270</y>
-     <width>271</width>
+     <width>401</width>
      <height>41</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QPushButton" name="btnToggleCIQ">
+     <widget class="QPushButton" name="btnTurnOff">
       <property name="text">
-       <string>On/Off</string>
+       <string>Turn On</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnTurnOn">
+      <property name="text">
+       <string>Turn Off</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

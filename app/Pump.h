@@ -9,13 +9,10 @@
 #include "HistoryLog.h"
 #include "BolusCalculator.h"
 #include "ErrorHandler.h"
-#include "SimulationClock.h"
 
+// Forward-declare to avoid circular include
 class SimulationClock;
 
-/**
- * @brief States the pump can be in.
- */
 enum class PumpState
 {
     IDLE,
@@ -24,90 +21,76 @@ enum class PumpState
     EMERGENCY_STOP
 };
 
-/**
- * @brief Simulates the t:slim insulin pump core logic.
- *        Handles profiles, basal/bolus delivery, logging, and warnings.
- */
 class Pump : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit Pump(QObject* parent = nullptr);
+    explicit Pump(QObject *parent = nullptr);
+    const QVector<HistoryLog>& history() const { return m_history; }
+    void setSimulationClock(SimulationClock *clock);
+    int batteryLevel() const;
+    int insulinLevel() const;
+    PumpState state() const;
+    const QVector<Profile>& profiles() const { return m_profiles; }
+    void addProfile(const Profile &p);
+    bool selectActiveProfile(const QString &name);
+    void startInsulin();
+    void stopInsulin();
+    void resumeInsulin();
+    void deliverBolus(int currentBG, int carbs);
+    void emergencyStop(const QString &reason);
+    void deliverExtendedBolus(double totalUnits, int pctNow, int durationMin);
+    double getInsulinOnBoard() const;
+    void maybeEmitIOB();
+    void logEvent(const QString &desc);
+    int getActiveProfileIndex() const { return m_activeProfileIndex; }
 
-    void setSimulationClock(SimulationClock* clock);
-
-    // --- Getters ---
-    int batteryLevel() const;      ///< Battery percentage [0–100]
-    int insulinLevel() const;      ///< Insulin units remaining
-    PumpState state() const;       ///< Current pump state
-
-    /** @returns the full history of timestamped events */
-    const QVector<HistoryLog> history() const { return m_history; }
-
-    // --- Profile Management ---
-    void addProfile(const Profile& p);
-    QVector<Profile> profiles() const;
-    bool selectActiveProfile(const QString& name);
-
-    // --- Insulin Delivery ---
-    void startInsulin();                        ///< Begin basal delivery
-    void stopInsulin();                         ///< Stop basal or bolus
-    void resumeInsulin();                       ///< Resume basal after a stop
-    void deliverBolus(int currentBG, int carbs);//< Calculate & deliver a bolus
-    void emergencyStop(const QString& reason);   ///< Immediate stop for safety
-
-    double getInsulinOnBoard() const;           ///< Stub: returns active IOB
-
-    // --- Warning thresholds ---
-    static constexpr int kLowBatteryThreshold = 20;  ///< %
-    static constexpr int kLowInsulinThreshold = 30;  ///< units
-    static constexpr int kCritLowBGThreshold  = 4;   ///< mmol/L
-    static constexpr int kCritHighBGThreshold = 13;  ///< mmol/L
+    static constexpr int kLowBatteryThreshold = 20;
+    static constexpr int kLowInsulinThreshold = 30;
+    static constexpr int kCritLowBGThreshold  = 4;
+    static constexpr int kCritHighBGThreshold = 13;
 
 public slots:
-    /**
-     * @brief Checks battery & insulin levels and raises/clears warnings.
-     *        Intended to be connected to a timer or SimulationClock tick.
-     */
-    void checkLevels();
     void onSimulatedTimeAdvanced(int minutes);
+    void checkLevels();
     void chargeBattery();
     void fillInsulin();
+    void checkBG(double mmol);
 
 signals:
-    /**
-     * @brief Emitted any time the pump wants to log a message (e.g., GUI console).
-     * @param msg  The log message.
-     */
-    void pumpLog(const QString& msg);
+    void pumpLog(const QString &msg);
     void batteryLevelChanged(int newBattery);
-
+    void reservoirChanged(double newUnits);
     void bolusDelivered(double units, int carbs);
-    void warningRaised (ErrorHandler::Warning w, QString msg);
+    void warningRaised(ErrorHandler::Warning w, QString msg);
     void warningCleared(ErrorHandler::Warning w);
+    void iobChanged(double ewIOB);
+    void insulinLevelChanged(int newLevel);
+    void basalRateChanged(double newRate);
 
 private:
-    /**
-     * @brief Appends a timestamped entry to the internal history.
-     * @param desc  Description of the event.
-     */
-    void logEvent(const QString& desc);
+    struct ActiveDose {
+        double units;
+        int elapsedMin;
+    };
 
-
-    int m_battery;                    ///< Battery level [%]
-    int m_insulin;                    ///< Insulin remaining [units]
-    int m_totalSimulatedMinutes = 0;  ///< accumulate
-    PumpState m_state;                ///< Current state
-
-    QVector<Profile> m_profiles;      ///< User profiles
-    int m_activeProfileIndex;         ///< Active profile index
-
-    QVector<HistoryLog> m_history;    ///< Chronological event history
-    ErrorHandler* m_errorHandler;     ///< Raises and clears warnings
+    QVector<ActiveDose> m_iob;
+    int m_insulinDuration = 300;  // 5h DIA
+    double currentIOB() const;
+    void ageAndPruneIOB(int mins);
+    int m_battery;
+    int m_insulin;
+    int m_totalSimulatedMinutes = 0;
+    PumpState m_state;
+    QVector<Profile> m_profiles;
+    int m_activeProfileIndex;
+    QVector<HistoryLog> m_history;
+    ErrorHandler* m_errorHandler;
     SimulationClock* m_clock = nullptr;
     QDateTime m_simTime;
-
+    double m_cachedIOB = 0.0;
+    double m_insulinOnBoard = 0.0;
+    double m_insulinActionDuration = 240.0;  // 4 hours (in minutes)
 };
 
 #endif // PUMP_H

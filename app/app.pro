@@ -19,9 +19,7 @@ SOURCES += \
     NumberKeypad.cpp \
     ProfileEditorPage.cpp \
     ProfileListPage.cpp \
-    PumpInfoPage.cpp \
     SettingsPage.cpp \
-    StatusPage.cpp \
     WarningDialog.cpp \
     main.cpp \
     BolusCalculator.cpp \
@@ -31,7 +29,6 @@ SOURCES += \
     ProfileManager.cpp \
     Pump.cpp \
     SimulationClock.cpp \
-    CGM.cpp \
     ControlIQ.cpp \
     EventLogger.cpp \
     ChartModel.cpp \
@@ -51,9 +48,7 @@ HEADERS += \
     Profile.h \
     ProfileEditorPage.h \
     ProfileListPage.h \
-    PumpInfoPage.h \
     SettingsPage.h \
-    StatusPage.h \
     BolusCalculator.h \
     ErrorHandler.h \
     HistoryLog.h \
@@ -61,7 +56,6 @@ HEADERS += \
     ProfileManager.h \
     Pump.h \
     SimulationClock.h \
-    CGM.h \
     ControlIQ.h \
     EventLogger.h \
     ChartModel.h \
@@ -78,9 +72,7 @@ FORMS += \
     NumberKeypad.ui \
     ProfileEditorPage.ui \
     ProfileListPage.ui \
-    PumpInfoPage.ui \
     SettingsPage.ui \
-    StatusPage.ui \
     mainWindow.ui
 
 # Deployment

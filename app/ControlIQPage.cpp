@@ -1,4 +1,3 @@
-// ControlIQPage.cpp
 #include "ControlIQPage.h"
 #include "ui_ControlIQPage.h"
 
@@ -6,9 +5,13 @@ ControlIQPage::ControlIQPage(QWidget *parent)
   : QWidget(parent), ui(new Ui::ControlIQPage)
 {
     ui->setupUi(this);
-    connect(ui->btnToggleCIQ, &QPushButton::clicked, this, &ControlIQPage::on_btnToggleCIQ_clicked);
-    connect(ui->btnBackCIQ,   &QPushButton::clicked, this, &ControlIQPage::on_btnBackCIQ_clicked);
+
+    // Connect the UI buttons to our signals
+    connect(ui->btnTurnOn, &QPushButton::clicked, this, &ControlIQPage::on_btnTurnOnCIQ_clicked);
+    connect(ui->btnTurnOff, &QPushButton::clicked, this, &ControlIQPage::on_btnTurnOffCIQ_clicked);
+    connect(ui->btnBackCIQ, &QPushButton::clicked, this, &ControlIQPage::on_btnBackCIQ_clicked);
 }
+
 
 ControlIQPage::~ControlIQPage()
 {
@@ -18,11 +21,14 @@ ControlIQPage::~ControlIQPage()
 void ControlIQPage::setStatus(const QString &status)
 {
     ui->lblIQStatusVal->setText(status);
-    ui->btnToggleCIQ->setText(status == "Active" ? "Turn Off" : "Turn On");
+    // Update button texts when the status changes
+    ui->btnTurnOn->setText(status == "Active" ? "ControlIQ is Active" : "Turn On");
+    ui->btnTurnOff->setText(status == "Inactive" ? "ControlIQ is Inactive" : "Turn Off");
 }
 
 void ControlIQPage::setCurrentBasal(double rate)
 {
+    m_currentBasalRate = rate;  // Update the basal rate when set
     ui->lblCurrentBasalVal->setText(QString::number(rate, 'f', 2) + " U/hr");
 }
 
@@ -31,17 +37,29 @@ void ControlIQPage::setPredictedBG(double bg)
     ui->lblPredictedBGVal->setText(QString::number(bg, 'f', 1) + " mmol/L");
 }
 
-void ControlIQPage::setNextAdjustment(const QString &adj)
+
+void ControlIQPage::on_btnTurnOnCIQ_clicked()
 {
-    ui->lblNextAdjustmentVal->setText(adj);
+    emit controlIQTurnedOn();  // Emit signal to enable ControlIQ
+    // Optionally update the basal rate here if required
+    setCurrentBasal(m_currentBasalRate);  // Update UI
 }
 
-void ControlIQPage::on_btnToggleCIQ_clicked()
+void ControlIQPage::on_btnTurnOffCIQ_clicked()
 {
-    emit toggleClicked();
+    emit controlIQTurnedOff();  // Emit signal to disable ControlIQ
+    // Set basal rate to 0 when ControlIQ is off
+    m_currentBasalRate = 0.0;
+    setCurrentBasal(m_currentBasalRate);  // Update UI
 }
 
 void ControlIQPage::on_btnBackCIQ_clicked()
 {
     emit backClicked();
+}
+
+// Function to return current basal rate
+double ControlIQPage::getCurrentBasalRate() const
+{
+    return m_currentBasalRate;  // Return the stored basal rate
 }

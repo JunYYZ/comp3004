@@ -18,8 +18,6 @@ public:
 
     void logDataPoint(int time, double glucose);
     void addBGPoint(int timeStep, double bg);
-<<<<<<< Updated upstream
-=======
 
 signals:
     /// user tapped back
@@ -28,7 +26,7 @@ signals:
 private slots:
     void on_btnBack_clicked();
     void onComboRangeChanged(int index);
->>>>>>> Stashed changes
+
 
 private:
     Ui::GraphPage *ui;

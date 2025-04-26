@@ -1,117 +1,89 @@
+// Pump.cpp
 #include "Pump.h"
 #include "SimulationClock.h"
+
 #include <cmath>
+#include <algorithm>
 #include <QDebug>
 
+// Update IOB with insulin reservoir, not IOB
+inline void Pump::maybeEmitIOB()
+{
+    double now = m_insulin;  // Use the insulin level directly for IOB
+    if (std::fabs(now - m_cachedIOB) >= 0.01) {  // 1 × 0.01 U step
+        m_cachedIOB = now;
+        emit iobChanged(now);
+    }
+}
+
+// Constructor & basic plumbing (Initialize m_insulin, m_insulinOnBoard)
 Pump::Pump(QObject *parent)
     : QObject(parent),
       m_battery(100),
-      m_insulin(300),
+      m_insulin(300),  // Insulin level in reservoir
+      m_totalSimulatedMinutes(0),
       m_state(PumpState::IDLE),
       m_activeProfileIndex(-1),
       m_clock(nullptr),
-      // Initialize simulated time to "now" or to some base; adjust as needed:
-      m_simTime(QDateTime::currentDateTime())
+      m_simTime(QDateTime::currentDateTime()),
+      m_insulinOnBoard(0.0),  // Initialize insulin on board to 0.0
+      m_insulinActionDuration(240.0)  // Duration for insulin action (e.g., 4 hours)
 {
-    // Create ErrorHandler and forward its signals to pumpLog
     m_errorHandler = new ErrorHandler(this);
-    connect(m_errorHandler, &ErrorHandler::warningRaised,
-            this, [&](ErrorHandler::Warning w, QString msg){
-                emit pumpLog(QString("WARNING [%1]: %2")
-                             .arg(int(w)).arg(msg));
-            });
-    connect(m_errorHandler, &ErrorHandler::warningCleared,
-            this, [&](ErrorHandler::Warning w){
-                emit pumpLog(QString("WARNING CLEARED [%1]")
-                             .arg(int(w)));
-            });
-
     connect(m_errorHandler, &ErrorHandler::warningRaised,
             this, &Pump::warningRaised);
     connect(m_errorHandler, &ErrorHandler::warningCleared,
             this, &Pump::warningCleared);
 
     logEvent("Pump initialized");
-    checkLevels();  // catch any startup warnings
+    checkLevels();  // Check for any warnings
 }
 
-void Pump::setSimulationClock(SimulationClock* clock)
+// Simulation clock hookup for IOB and insulin delivery timing
+void Pump::setSimulationClock(SimulationClock* clk)
 {
     if (m_clock) {
         disconnect(m_clock, &SimulationClock::tick,
-                   this,     &Pump::onSimulatedTimeAdvanced);
+                   this, &Pump::onSimulatedTimeAdvanced);
     }
-    m_clock = clock;
+    m_clock = clk;
     if (m_clock) {
         connect(m_clock, &SimulationClock::tick,
-                this,     &Pump::onSimulatedTimeAdvanced);
+                this, &Pump::onSimulatedTimeAdvanced);
     }
 }
 
-int Pump::batteryLevel() const
+// IOB helpers (use m_insulin, not m_insulinOnBoard)
+double Pump::currentIOB() const
 {
-    return m_battery;
+    return m_insulin;  // Directly return the insulin left in the reservoir
 }
 
-int Pump::insulinLevel() const
+void Pump::ageAndPruneIOB(int mins)
 {
-    return m_insulin;
-}
-
-PumpState Pump::state() const
-{
-    return m_state;
-}
-
-QVector<Profile> Pump::profiles() const
-{
-    return m_profiles;
-}
-
-void Pump::addProfile(const Profile &p)
-{
-    m_profiles.append(p);
-    if (m_activeProfileIndex < 0)
-        m_activeProfileIndex = 0;
-    logEvent(QString("Profile added: %1").arg(p.name()));
-
-}
-
-bool Pump::selectActiveProfile(const QString &name)
-{
-    for (int i = 0; i < m_profiles.size(); ++i) {
-        if (m_profiles[i].name() == name) {
-            m_activeProfileIndex = i;
-            logEvent(QString("Active profile set to '%1'").arg(name));
-            emit pumpLog(QString("Profile: %1").arg(name));
-            return true;
-        }
+    // Decay the insulin in the system over time based on the duration
+    if (m_insulinOnBoard > 0.0) {
+        double decay = (mins / m_insulinActionDuration) * m_insulinOnBoard;
+        m_insulinOnBoard = std::max(0.0, m_insulinOnBoard - decay);
     }
-    emit pumpLog("Error: profile not found");
-    return false;
+    maybeEmitIOB();
 }
 
-double Pump::getInsulinOnBoard() const
-{
-    // TODO: implement real IOB calculation by scanning m_history
-    return 0.0;
-}
-
+// Basal and bolus logic using m_insulin directly
 void Pump::startInsulin()
 {
-    if (m_state == PumpState::IDLE && m_activeProfileIndex >= 0) {
-        m_state = PumpState::DELIVERING_BASAL;
-        logEvent("Basal delivery started");
-        emit pumpLog("Basal started");
-    }
+    if (m_state != PumpState::IDLE || m_activeProfileIndex < 0) return;
+    m_state = PumpState::DELIVERING_BASAL;
+    logEvent("Basal delivery started");
+    emit pumpLog("Basal started");
 }
 
 void Pump::stopInsulin()
 {
-    if (m_state == PumpState::DELIVERING_BASAL ||
-        m_state == PumpState::DELIVERING_BOLUS) {
+    if (m_state == PumpState::DELIVERING_BASAL || m_state == PumpState::DELIVERING_BOLUS) {
         m_state = PumpState::IDLE;
         logEvent("Insulin delivery stopped");
+        emit basalRateChanged(0.0);
         emit pumpLog("Delivery stopped");
     }
 }
@@ -121,151 +93,197 @@ void Pump::resumeInsulin()
     if (m_state == PumpState::IDLE && m_activeProfileIndex >= 0) {
         m_state = PumpState::DELIVERING_BASAL;
         logEvent("Basal resumed");
+        emit basalRateChanged(m_profiles[m_activeProfileIndex].basalRate());
         emit pumpLog("Basal resumed");
     }
 }
 
+// Deliver bolus using insulin directly and updating IOB
 void Pump::deliverBolus(int currentBG, int carbs)
 {
-    qDebug() << "[Pump] deliverBolus called with BG:" << currentBG << "Carbs:" << carbs;
-  
     if (m_activeProfileIndex < 0) {
-        qDebug() << "[Pump] No active profile set!";
         emit pumpLog("Error: no active profile");
         return;
     }
-
     checkLevels();
 
-    Profile profile = m_profiles[m_activeProfileIndex];
-    qDebug() << "[Pump] Using profile:" << profile.name()
-             << "CarbRatio:" << profile.carbRatio()
-             << "CorrectionFactor:" << profile.correctionFactor();
+    const Profile& profile = m_profiles[m_activeProfileIndex];
+    BolusCalculator calc(profile.carbRatio(), profile.correctionFactor(), m_insulinOnBoard);
 
-    BolusCalculator calc(
-        profile.carbRatio(),
-        profile.correctionFactor(),
-        getInsulinOnBoard()
-    );
-
-    double foodBolus = calc.foodBolus(static_cast<double>(carbs));
-    double corrBolus = calc.correctionBolus(static_cast<double>(currentBG));
+    double foodBolus = calc.foodBolus(double(carbs));
+    double corrBolus = calc.correctionBolus(double(currentBG));
     double required  = foodBolus + corrBolus;
     double finalDose = calc.subtractIOB(required);
 
-    qDebug() << "[Pump] foodBolus:" << foodBolus
-             << "corrBolus:" << corrBolus
-             << "required:" << required
-             << "IOB:" << calc.insulinOnBoard()
-             << "finalDose (pre-cap):" << finalDose;
-
-    // Clamp final dose to max per-bolus safe value
     const double maxSafeDose = 15.0;
-    if (finalDose > maxSafeDose) {
-        qDebug() << "[Pump] Capping bolus to" << maxSafeDose << "units (was" << finalDose << ")";
-        finalDose = maxSafeDose;
-    }
+    if (finalDose > maxSafeDose) finalDose = maxSafeDose;
+    if (finalDose > m_insulin)   finalDose = m_insulin;
+    if (finalDose <= 0.0)        return;
 
-    // Final cap to insulin available
-    if (finalDose > m_insulin) {
-        qDebug() << "[Pump] Not enough insulin. Delivering only" << m_insulin << "units";
-        finalDose = m_insulin;
-    }
+    // Update insulin directly (deduct from reservoir)
+    m_insulin -= int(std::round(finalDose));
+    emit reservoirChanged(m_insulin);
 
-    // If dose is still 0 or less, skip delivery
-    if (finalDose <= 0.0) {
-        qDebug() << "finalDose is 0. Skipping bolusDelivered emit.";
-        return;
-    }
+    // Update insulin on board and emit IOB
+    m_insulinOnBoard += finalDose; // Add bolus to IOB
+    maybeEmitIOB();
 
-    m_insulin = static_cast<int>(std::round(m_insulin - finalDose));
-    m_state   = PumpState::DELIVERING_BOLUS;
+    logEvent(QString("Bolus %1 U (food:%2  corr:%3  IOB:%4)")
+             .arg(finalDose).arg(foodBolus).arg(corrBolus).arg(m_insulinOnBoard));
 
-    logEvent(QString("Bolus delivered: %1 u (food:%2, corr:%3, IOB:%4)")
-             .arg(finalDose)
-             .arg(foodBolus)
-             .arg(corrBolus)
-             .arg(calc.insulinOnBoard()));
-    emit pumpLog(QString("Delivered %1 units bolus").arg(finalDose));
-
-    qDebug() << "[Pump] Emitting bolusDelivered:" << finalDose;
+    emit pumpLog(QString("Delivered %1 U bolus").arg(finalDose));
     emit bolusDelivered(finalDose, carbs);
-
-    m_state = PumpState::IDLE;
-    checkLevels();
 }
 
-void Pump::emergencyStop(const QString &reason)
-{
-    m_state = PumpState::EMERGENCY_STOP;
-    logEvent(QString("Emergency Stop: %1").arg(reason));
-    emit pumpLog(QString("Emergency Stop: %1").arg(reason));
-}
-
+// Handle IOB updates based on time (via simulation clock)
 void Pump::onSimulatedTimeAdvanced(int minutes)
 {
-    // 1) Advance your own clock if you have one
     m_simTime = m_simTime.addSecs(minutes * 60);
-//    logEvent(QString("Sim time advanced by %1 minute(s)").arg(minutes));
-
-    // 2) Update your total simulated‐time counter
     m_totalSimulatedMinutes += minutes;
 
-    // 3) Compute how many 25‐minute “chunks” have elapsed,
-    //    and drain 5% per chunk:
-    int chunks = m_totalSimulatedMinutes / 25;
-    int newBattery = 100 - chunks * 5;
-    newBattery = std::max(newBattery, 0); // clamp at zero
+    // Decay insulin on board over time based on action duration
+    if (m_insulinOnBoard > 0.0) {
+        double decay = (minutes / m_insulinActionDuration) * m_insulinOnBoard;
+        m_insulinOnBoard = std::max(0.0, m_insulinOnBoard - decay);
+    }
 
-    // 4) If it really changed, store it, log it, and emit:
+    // Battery and insulin level checks
+    int chunks = m_totalSimulatedMinutes / 25;
+    int newBattery = std::max(0, 100 - chunks * 5);
     if (newBattery != m_battery) {
         m_battery = newBattery;
-//        logEvent(QString("Battery level: %1%").arg(m_battery));
         emit batteryLevelChanged(m_battery);
     }
 
+    // Deliver basal insulin if in basal mode
+    if (m_state == PumpState::DELIVERING_BASAL && m_activeProfileIndex >= 0) {
+        const Profile &profile = m_profiles[m_activeProfileIndex];
+        double ratePerHour = profile.basalRate(); // U/hr
+        double unitsThisTick = ratePerHour * (minutes / 60.0);
+        int deliveredUnits = int(std::round(unitsThisTick));
+
+        if (deliveredUnits > 0) {
+            m_insulin = std::max(0, m_insulin - deliveredUnits);
+            logEvent(QString("Basal delivered: %1 U over %2 min")
+                     .arg(deliveredUnits).arg(minutes));
+        }
+    }
+
+    // Emit insulin on board if changed
+    maybeEmitIOB();
     checkLevels();
-
 }
 
-void Pump::logEvent(const QString &desc)
-{
-    // Stamp with current simulated time
-    m_history.append( HistoryLog(m_simTime, desc) );
-    emit pumpLog(desc);
-}
-
+// Level checks for insulin and battery
 void Pump::checkLevels()
 {
-    // Battery warning
     if (m_battery <= kLowBatteryThreshold)
         m_errorHandler->raise(ErrorHandler::LowBattery, "Battery low");
     else
         m_errorHandler->clear(ErrorHandler::LowBattery);
 
-    // Insulin warning
     if (m_insulin <= kLowInsulinThreshold)
         m_errorHandler->raise(ErrorHandler::LowInsulin, "Insulin low");
     else
         m_errorHandler->clear(ErrorHandler::LowInsulin);
 }
 
+// Charge battery
 void Pump::chargeBattery()
 {
     int old = m_battery;
-    m_battery = std::min(m_battery + 25, 100);
+    m_battery = 100;
     if (m_battery != old) {
-      logEvent(QString("Battery charged to %1 %").arg(m_battery));
-      emit batteryLevelChanged(m_battery);
-      // **reset the drain baseline:**
-      m_totalSimulatedMinutes = 0;
-      m_errorHandler->clear(ErrorHandler::LowBattery);
+        logEvent(QString("Battery charged to %1 %").arg(m_battery));
+        emit batteryLevelChanged(m_battery);
+        m_totalSimulatedMinutes = 0;  // reset drain
+        m_errorHandler->clear(ErrorHandler::LowBattery);
     }
 }
 
-void Pump::fillInsulin(){
+// Refill insulin reservoir
+void Pump::fillInsulin()
+{
     m_insulin = 300;
-    logEvent("Cartridge refilled to 300 u");
+    emit insulinLevelChanged(m_insulin);
+    logEvent("Cartridge refilled to 300 U");
     emit pumpLog("Insulin refilled");
     m_errorHandler->clear(ErrorHandler::LowInsulin);
+}
+
+bool Pump::selectActiveProfile(const QString &name) {
+    // Iterate through profiles and set the active profile
+    for (int i = 0; i < m_profiles.size(); ++i) {
+        if (m_profiles[i].name() == name) {
+            m_activeProfileIndex = i;
+            emit pumpLog(QString("Profile: %1").arg(name));
+            return true;
+        }
+    }
+    emit pumpLog("Error: profile not found");
+    return false;
+}
+
+int Pump::insulinLevel() const {
+    return m_insulin;  // Assuming m_insulin holds the current insulin level
+}
+
+void Pump::addProfile(const Profile &p) {
+    m_profiles.append(p);
+}
+
+int Pump::batteryLevel() const {
+    return m_battery;
+}
+
+void Pump::logEvent(const QString &desc) {
+    // Assuming you want to log events into a history or console
+    m_history.append(HistoryLog(m_simTime, desc));  // Store in history
+    emit pumpLog(desc);  // Emit to GUI or external logging
+}
+
+void Pump::deliverExtendedBolus(double totalUnits, int pctNow, int durationMin) {
+    int currentBG = 0;  // Assuming you want to use current BG in the logic
+
+    // First, deliver the immediate portion (like a regular bolus)
+    deliverBolus(currentBG, 0);  // Call existing deliverBolus function for the "now" part
+
+    // Now add the 'now' portion to IOB (Insulin on Board)
+    double nowU = totalUnits * pctNow / 100.0;
+    m_iob.append({ nowU, 0 });  // Add the now chunk to the IOB list
+    maybeEmitIOB();  // Emit updated IOB
+
+    logEvent(QString("[Extended Bolus] Delivered %1 U immediately").arg(nowU));
+}
+
+PumpState Pump::state() const {
+    return m_state;  // assuming m_state is the state variable in the class
+}
+
+
+void Pump::checkBG(double bg)
+{
+    if (bg <= 2)
+    {
+        m_errorHandler->raise(ErrorHandler::BGLow,
+                              QString("BG critically low (%1 mmol/L) – stopping insulin")
+                              .arg(bg));
+        
+    stopInsulin();
+    }
+    else{
+        m_errorHandler->clear(ErrorHandler::BGLow);
+        resumeInsulin();
+    }
+
+    if (bg >= 10)
+    {
+        m_errorHandler->raise(ErrorHandler::BGHigh,
+                              QString("BG high (%1 mmol/L) – giving correction dose")
+                              .arg(bg));
+
+        deliverBolus(qRound(bg), 0);  
+    }
+    else
+        m_errorHandler->clear(ErrorHandler::BGHigh);
 }

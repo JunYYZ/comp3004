@@ -8,17 +8,27 @@
 /**
  * @brief ControlIQ algorithm adjusts insulin based on predicted BG.
  */
+// ControlIQ.h
 class ControlIQ : public QObject {
     Q_OBJECT
 public:
-    ControlIQ(Pump* pump, QObject* parent = nullptr);
+    explicit ControlIQ(Pump* pump, QObject* parent=nullptr);
 
+    bool isEnabled() const;
 public slots:
-    /** Connect to CGM::newReading */
+    void setEnabled(bool on);
     void onNewReading(double glucose);
 
+signals:
+    void enabledChanged(bool enabled);
+    void predictionMade(double prediction);
+    void stoppedForLowBG();
+    void insulinLevelUpdated(int newLevel);
+
 private:
-    Pump* m_pump;
     double predict30Min(double currentBG);
+    Pump*  m_pump;
+    bool   m_enabled = false;
 };
+
 #endif // CONTROLIQ_H
