@@ -6,7 +6,8 @@ Team Members: Nimish Bhatia, Michael Palummieri, Sajitha Polwatta, Nischal Shres
 
 Github Link: https://github.com/JunYYZ/comp3004/
 
-
+# Video Link
+https://youtu.be/uPL0Rct2Xhg
 
 # Project Distribution
 
